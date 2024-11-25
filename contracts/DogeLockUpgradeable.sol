@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import { OFTAdapter } from "@layerzerolabs/oft-evm/contracts/OFTAdapter.sol";
+import { OFTAdapterUpgradeable } from "@layerzerolabs/oft-evm-upgradeable/contracts/oft/OFTAdapterUpgradeable.sol";
 import { SendParam, OFTReceipt, MessagingReceipt, MessagingFee } from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
 import { SafeERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IDogeLock } from "./interfaces/IDogeLock.sol";
 
-contract DogeLock is IDogeLock, OFTAdapter {
+contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
     using SafeERC20 for IERC20;
 
     uint256 public maxLockAmount = 20_000_000 ether;
@@ -19,11 +18,13 @@ contract DogeLock is IDogeLock, OFTAdapter {
     IERC20 public immutable dogeCoin;
     mapping(address user => uint256 balance) public balances;
 
-    constructor(
-        address _dogeCoin,
-        address _lzEndpoint
-    ) OFTAdapter(_dogeCoin, _lzEndpoint, msg.sender) Ownable(msg.sender) {
+    constructor(address _dogeCoin, address _lzEndpoint) OFTAdapterUpgradeable(_dogeCoin, _lzEndpoint) {
         dogeCoin = IERC20(_dogeCoin);
+    }
+
+    function initialize() external initializer {
+        __OFTAdapter_init(msg.sender);
+        __Ownable_init(msg.sender);
     }
 
     function addressToBytes32(address _addr) external pure returns (bytes32) {
@@ -59,7 +60,25 @@ contract DogeLock is IDogeLock, OFTAdapter {
         MessagingFee calldata _fee,
         address _refundAddress
     ) external payable returns (MessagingReceipt memory msgReceipt, OFTReceipt memory oftReceipt) {
-        return _send(_sendParam, _fee, _refundAddress);
+        // @dev Applies the token transfers regarding this send() operation.
+        // - amountSentLD is the amount in local decimals that was ACTUALLY sent/debited from the sender.
+        // - amountReceivedLD is the amount in local decimals that will be received/credited to the recipient on the remote OFT instance.
+        (uint256 amountSentLD, uint256 amountReceivedLD) = _debit(
+            msg.sender,
+            _sendParam.amountLD,
+            _sendParam.minAmountLD,
+            _sendParam.dstEid
+        );
+
+        // @dev Builds the options and OFT message to quote in the endpoint.
+        (bytes memory message, bytes memory options) = _buildMsgAndOptions(_sendParam, amountReceivedLD);
+
+        // @dev Sends the message to the LayerZero endpoint and returns the LayerZero msg receipt.
+        msgReceipt = _lzSend(_sendParam.dstEid, message, options, _fee, _refundAddress);
+        // @dev Formulate the OFT receipt.
+        oftReceipt = OFTReceipt(amountSentLD, amountReceivedLD);
+
+        emit OFTSent(msgReceipt.guid, _sendParam.dstEid, msg.sender, amountSentLD, amountReceivedLD);
     }
 
     function _debit(
