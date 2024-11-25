@@ -71,6 +71,29 @@ describe('Doge Lock Test', function () {
         await myOFTB.connect(ownerB).setPeer(eidA, ethers.utils.zeroPad(dogeLock.address, 32))
     })
 
+    it('test lock', async function () {
+        // Minting an initial amount of tokens to ownerA's address in the myOFTA contract
+        const initialAmount = ethers.utils.parseEther('100')
+        await token.mint(ownerA.address, initialAmount)
+
+        // Defining the amount of tokens to send and constructing the parameters for the send operation
+        const tokensToSend = ethers.utils.parseEther('1')
+
+        await token.connect(ownerA).approve(dogeLock.address, tokensToSend)
+        await dogeLock.connect(ownerA).lock(tokensToSend)
+        // await expect(dogeLock.connect(ownerA).lock(tokensToSend))
+        //     .to.emit(dogeLock, 'Lock')
+        //     .withArgs(ownerA.address, tokensToSend, ethers.provider.blockNumber)
+
+        // Fetching the final token balances of ownerA and ownerB
+        const finalBalanceA = await token.balanceOf(ownerA.address)
+        const finalBalanceAdapter = await token.balanceOf(dogeLock.address)
+
+        // Asserting that the final balances are as expected after the send operation
+        expect(finalBalanceA).eql(initialAmount.sub(tokensToSend))
+        expect(finalBalanceAdapter).eql(tokensToSend)
+    })
+
     // A test case to verify token transfer functionality
     it('should send a token from A address to B address via OFTAdapter/OFT', async function () {
         // Minting an initial amount of tokens to ownerA's address in the myOFTA contract
