@@ -36,7 +36,7 @@ import { MessagingContext } from "@layerzerolabs/lz-evm-protocol-v2/contracts/Me
 //          represented as a public key, or some other identifier. The term sender/receiver is more generic
 //     -payload -> message.
 //          - Rationale: The term payload is used in the context of a packet, which is a combination of the message and GUID
-contract EndpointV2Mock is
+contract EndpointMock is
     ILayerZeroEndpointV2,
     MessagingChannel,
     MessageLibManager,

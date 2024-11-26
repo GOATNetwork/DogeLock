@@ -32,7 +32,7 @@ describe('Doge Lock Test', function () {
 
         MyOFT = await ethers.getContractFactory('MyOFTMock')
 
-        ERC20Mock = await ethers.getContractFactory('MyERC20Mock')
+        ERC20Mock = await ethers.getContractFactory('DogecoinMock')
 
         // Fetching the first three signers (accounts) from Hardhat's local Ethereum network
         const signers = await ethers.getSigners()
@@ -72,13 +72,13 @@ describe('Doge Lock Test', function () {
         await myOFTB.connect(ownerB).setPeer(eidA, ethers.utils.zeroPad(dogeLock.address, 32))
     })
 
-    it('test lock/unlock', async function () {
+    it('test successfully lock/unlock', async function () {
         // Minting an initial amount of tokens to ownerA's address in the myOFTA contract
-        const initialAmount = ethers.utils.parseEther('100')
+        const initialAmount = ethers.utils.parseUnits('100', 8)
         await token.mint(ownerA.address, initialAmount)
 
         // Defining the amount of tokens to send and constructing the parameters for the send operation
-        const tokensToSend = ethers.utils.parseEther('50')
+        const tokensToSend = ethers.utils.parseUnits('50', 8)
 
         await token.connect(ownerA).approve(dogeLock.address, tokensToSend)
         await dogeLock.connect(ownerA).lock(tokensToSend)
@@ -100,11 +100,11 @@ describe('Doge Lock Test', function () {
     // A test case to verify token transfer functionality
     it('should send a token from A address to B address via OFTAdapter/OFT', async function () {
         // Minting an initial amount of tokens to ownerA's address in the myOFTA contract
-        const initialAmount = ethers.utils.parseEther('100')
+        const initialAmount = ethers.utils.parseUnits('100', 8)
         await token.mint(ownerA.address, initialAmount)
 
         // Defining the amount of tokens to send and constructing the parameters for the send operation
-        const tokensToSend = ethers.utils.parseEther('50')
+        const tokensToSend = ethers.utils.parseUnits('50', 8)
 
         // Defining extra message execution options for the send operation
         const options = Options.newOptions().addExecutorLzReceiveOption(200000, 0).toHex().toString()
@@ -114,6 +114,7 @@ describe('Doge Lock Test', function () {
             ethers.utils.zeroPad(ownerB.address, 32),
             tokensToSend,
             tokensToSend,
+            // BigNumber.from(0),
             options,
             '0x',
             '0x',

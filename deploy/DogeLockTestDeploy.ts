@@ -8,7 +8,7 @@ async function main() {
 
     const DogeLock = await ethers.getContractFactory('DogeLockUpgradeable')
     const ERC20Mock = await ethers.getContractFactory('MyERC20Mock')
-    const EndpointV2Mock = await ethers.getContractFactory('EndpointV2Mock')
+    const EndpointV2Mock = await ethers.getContractFactory('EndpointMock')
 
     const token = await ERC20Mock.deploy('Token', 'TOKEN')
     const mockEndpointV2A = await EndpointV2Mock.deploy(1, deployerAddr)
