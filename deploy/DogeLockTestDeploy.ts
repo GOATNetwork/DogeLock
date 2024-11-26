@@ -1,25 +1,38 @@
-import { ethers } from 'hardhat'
-import { BigNumber, Contract, ContractFactory } from 'ethers'
+import { HardhatRuntimeEnvironment } from 'hardhat/types'
+import { DeployFunction } from 'hardhat-deploy/types'
 
-async function main() {
-    const [deployer] = await ethers.getSigners()
-    const deployerAddr = await deployer.getAddress()
-    console.log('deployerAddr :', deployerAddr)
+const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    const { deployments, getNamedAccounts } = hre
+    const { deploy } = deployments
+    const { deployer } = await getNamedAccounts()
 
-    const DogeLock = await ethers.getContractFactory('DogeLockUpgradeable')
-    const ERC20Mock = await ethers.getContractFactory('MyERC20Mock')
-    const EndpointV2Mock = await ethers.getContractFactory('EndpointMock')
+    console.log('deployerAddr:', deployer)
 
-    const token = await ERC20Mock.deploy('Token', 'TOKEN')
-    const mockEndpointV2A = await EndpointV2Mock.deploy(1, deployerAddr)
-    const dogeLock = await DogeLock.deploy(token.address, mockEndpointV2A.address, BigNumber.from(0))
+    // deploy Mock Token
+    const token = await deploy('MyERC20Mock', {
+        from: deployer,
+        args: ['Token', 'TOKEN'],
+        log: true,
+    })
+
+    // deploy Mock Endpoint
+    const mockEndpointV2 = await deploy('EndpointMock', {
+        from: deployer,
+        args: [1, deployer],
+        log: true,
+    })
+
+    // deploy DogeLock
+    const dogeLock = await deploy('DogeLockUpgradeable', {
+        from: deployer,
+        args: [token.address, mockEndpointV2.address, 0],
+        log: true,
+    })
 
     console.log('Mock Token:', token.address)
-    console.log('Mock Endpoint:', mockEndpointV2A.address)
+    console.log('Mock Endpoint:', mockEndpointV2.address)
     console.log('Doge Lock:', dogeLock.address)
 }
 
-main().catch((error) => {
-    console.error(error)
-    process.exitCode = 1
-})
+export default func
+func.tags = ['DogeLockTest']
