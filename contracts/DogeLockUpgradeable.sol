@@ -22,9 +22,9 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
         dogeCoin = IERC20(_dogeCoin);
     }
 
-    function initialize() external initializer {
-        __OFTAdapter_init(msg.sender);
-        __Ownable_init(msg.sender);
+    function initialize(address _owner) external initializer {
+        __OFTAdapter_init(_owner);
+        __Ownable_init(_owner);
     }
 
     function addressToBytes32(address _addr) external pure returns (bytes32) {
