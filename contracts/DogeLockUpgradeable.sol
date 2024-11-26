@@ -9,14 +9,15 @@ import { IDogeLock } from "./interfaces/IDogeLock.sol";
 contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
     using SafeERC20 for IERC20;
 
+    uint256 public constant UNLOCK_TIME = 123456789; // unlock timestamp;
+
     uint256 public maxLockAmount = 20_000_000 ether;
     uint256 public personalMaxLockAmount = 5_000_000 ether;
     uint256 public personalMinLockAmount = 50 ether;
 
-    uint256 constant UNLOCK_TIME = 123456789; // unlock timestamp;
-
     IERC20 public immutable dogeCoin;
     mapping(address user => uint256 balance) public balances;
+    uint256 public totalBalance;
 
     constructor(address _dogeCoin, address _lzEndpoint) OFTAdapterUpgradeable(_dogeCoin, _lzEndpoint) {
         dogeCoin = IERC20(_dogeCoin);
@@ -42,15 +43,18 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
     }
 
     function lock(uint256 _amount) external {
-        require(_amount > 0, InvalidAmount());
+        require(_amount >= personalMinLockAmount, BelowMin());
         dogeCoin.safeTransferFrom(msg.sender, address(this), _amount);
         balances[msg.sender] += _amount;
+        totalBalance += _amount;
+        require(balances[msg.sender] <= personalMaxLockAmount && totalBalance <= maxLockAmount, ExceededMax());
         emit Lock(msg.sender, _amount, block.number);
     }
 
     function unlock(uint256 _amount) external {
         require(_amount <= balances[msg.sender], ExceededAmount());
         balances[msg.sender] -= _amount;
+        totalBalance -= _amount;
         dogeCoin.safeTransfer(msg.sender, _amount);
         emit Unlock(msg.sender, _amount, block.number);
     }

@@ -1,6 +1,6 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect } from 'chai'
-import { Contract, ContractFactory } from 'ethers'
+import { BigNumber, Contract, ContractFactory } from 'ethers'
 import { deployments, ethers } from 'hardhat'
 
 import { Options } from '@layerzerolabs/lz-v2-utilities'
@@ -60,7 +60,7 @@ describe('Doge Lock Test', function () {
 
         // Deploying two instances of MyOFT contract with different identifiers and linking them to the mock LZEndpoint
         dogeLock = await DogeLock.deploy(token.address, mockEndpointV2A.address)
-        await dogeLock.initialize()
+        await dogeLock.initialize(ownerA.address)
         myOFTB = await MyOFT.deploy('bOFT', 'bOFT', mockEndpointV2B.address, ownerB.address)
 
         // Setting destination endpoints in the LZEndpoint mock for each MyOFT instance
@@ -72,19 +72,16 @@ describe('Doge Lock Test', function () {
         await myOFTB.connect(ownerB).setPeer(eidA, ethers.utils.zeroPad(dogeLock.address, 32))
     })
 
-    it('test lock', async function () {
+    it('test lock/unlock', async function () {
         // Minting an initial amount of tokens to ownerA's address in the myOFTA contract
         const initialAmount = ethers.utils.parseEther('100')
         await token.mint(ownerA.address, initialAmount)
 
         // Defining the amount of tokens to send and constructing the parameters for the send operation
-        const tokensToSend = ethers.utils.parseEther('1')
+        const tokensToSend = ethers.utils.parseEther('50')
 
         await token.connect(ownerA).approve(dogeLock.address, tokensToSend)
         await dogeLock.connect(ownerA).lock(tokensToSend)
-        // await expect(dogeLock.connect(ownerA).lock(tokensToSend))
-        //     .to.emit(dogeLock, 'Lock')
-        //     .withArgs(ownerA.address, tokensToSend, ethers.provider.blockNumber)
 
         // Fetching the final token balances of ownerA and ownerB
         const finalBalanceA = await token.balanceOf(ownerA.address)
@@ -93,6 +90,11 @@ describe('Doge Lock Test', function () {
         // Asserting that the final balances are as expected after the send operation
         expect(finalBalanceA).eql(initialAmount.sub(tokensToSend))
         expect(finalBalanceAdapter).eql(tokensToSend)
+
+        await dogeLock.connect(ownerA).unlock(tokensToSend)
+
+        expect(await token.balanceOf(ownerA.address)).eql(initialAmount)
+        expect(await token.balanceOf(dogeLock.address)).eql(BigNumber.from(0))
     })
 
     // A test case to verify token transfer functionality
@@ -102,7 +104,7 @@ describe('Doge Lock Test', function () {
         await token.mint(ownerA.address, initialAmount)
 
         // Defining the amount of tokens to send and constructing the parameters for the send operation
-        const tokensToSend = ethers.utils.parseEther('1')
+        const tokensToSend = ethers.utils.parseEther('50')
 
         // Defining extra message execution options for the send operation
         const options = Options.newOptions().addExecutorLzReceiveOption(200000, 0).toHex().toString()
