@@ -59,7 +59,7 @@ describe('Doge Lock Test', function () {
         token = await ERC20Mock.deploy('Token', 'TOKEN')
 
         // Deploying two instances of MyOFT contract with different identifiers and linking them to the mock LZEndpoint
-        dogeLock = await DogeLock.deploy(token.address, mockEndpointV2A.address)
+        dogeLock = await DogeLock.deploy(token.address, mockEndpointV2A.address, BigNumber.from(0))
         await dogeLock.initialize(ownerA.address)
         myOFTB = await MyOFT.deploy('bOFT', 'bOFT', mockEndpointV2B.address, ownerB.address)
 

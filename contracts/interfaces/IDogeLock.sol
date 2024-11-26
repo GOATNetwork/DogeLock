@@ -11,6 +11,7 @@ interface IDogeLock {
     error ExceededAmount();
     error ExceededMax();
     error BelowMin();
+    error TimeNotReached();
 
     function addressToBytes32(address _addr) external pure returns (bytes32);
 
