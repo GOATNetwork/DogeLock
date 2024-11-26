@@ -12,9 +12,9 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
     IERC20 public immutable dogeCoin;
     uint256 public immutable bridgeTime;
 
-    uint256 public maxLockAmount = 20_000_000 ether;
-    uint256 public personalMaxLockAmount = 5_000_000 ether;
-    uint256 public personalMinLockAmount = 50 ether;
+    uint256 public maxLockAmount;
+    uint256 public personalMaxLockAmount;
+    uint256 public personalMinLockAmount;
 
     mapping(address user => uint256 balance) public balances;
     uint256 public totalBalance;
@@ -31,6 +31,9 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
     function initialize(address _owner) external initializer {
         __OFTAdapter_init(_owner);
         __Ownable_init(_owner);
+        maxLockAmount = 20_000_000 ether;
+        personalMaxLockAmount = 5_000_000 ether;
+        personalMinLockAmount = 50 ether;
     }
 
     function addressToBytes32(address _addr) external pure returns (bytes32) {
