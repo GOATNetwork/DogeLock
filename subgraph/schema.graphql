@@ -1,0 +1,30 @@
+type User @entity {
+  id: ID!                    # user address
+  totalLocked: BigInt!       # current total locked amount
+  lockHistory: [LockEvent!]! @derivedFrom(field: "user")
+  unlockHistory: [UnlockEvent!]! @derivedFrom(field: "user")
+}
+
+type LockEvent @entity {
+  id: ID!                    # transaction hash-logIndex
+  user: User!                # user
+  amount: BigInt!            # locked amount
+  blockNumber: BigInt!       # block number
+  timestamp: BigInt!         # timestamp
+  transactionHash: String!   # transaction hash
+}
+
+type UnlockEvent @entity {
+  id: ID!                    # transaction hash-logIndex
+  user: User!                # user
+  amount: BigInt!            # unlocked amount
+  blockNumber: BigInt!       # block number
+  timestamp: BigInt!         # timestamp
+  transactionHash: String!   # transaction hash
+}
+
+type GlobalStat @entity {
+  id: ID!                    # fixed as "global"
+  totalLocked: BigInt!       # global total locked amount
+  userCount: BigInt!         # total user count
+}

@@ -1,0 +1,20 @@
+version: '3'
+services:
+  geth:
+    image: ethereum/client-go:latest
+    ports:
+      - "8545:8545"
+    command:
+      - --dev
+      - --http
+      - --http.api=eth,net,web3,debug,txpool
+      - --http.addr=0.0.0.0
+      - --http.corsdomain="*"
+      - --http.vhosts="*"
+      - --ws
+      - --ws.api=eth,net,web3,debug,txpool
+      - --ws.addr=0.0.0.0
+      - --ws.origins="*"
+      - --allow-insecure-unlock
+      - --dev.period=0
+      - --miner.gaslimit=30000000 
