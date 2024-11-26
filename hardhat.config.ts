@@ -76,6 +76,10 @@ const config: HardhatUserConfig = {
             // Need this for testing because TestHelperOz5.sol is exceeding the compiled contract size limit
             allowUnlimitedContractSize: true,
         },
+        localhost: {
+            url: 'http://127.0.0.1:8545',
+            accounts,
+        },
     },
     namedAccounts: {
         deployer: {

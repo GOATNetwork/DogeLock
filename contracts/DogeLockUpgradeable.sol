@@ -10,7 +10,7 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable dogeCoin;
-    uint256 public immutable bridgeTime; // unlock timestamp;
+    uint256 public immutable bridgeTime;
 
     uint256 public maxLockAmount = 20_000_000 ether;
     uint256 public personalMaxLockAmount = 5_000_000 ether;
@@ -70,7 +70,7 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
         address _refundAddress
     ) external payable returns (MessagingReceipt memory msgReceipt, OFTReceipt memory oftReceipt) {
         require(block.timestamp >= bridgeTime, TimeNotReached());
-        // @dev Applies the token transfers regarding this send() operation.
+        // @dev Applies the token transfers regarding this bridge() operation.
         // - amountSentLD is the amount in local decimals that was ACTUALLY sent/debited from the sender.
         // - amountReceivedLD is the amount in local decimals that will be received/credited to the recipient on the remote OFT instance.
         (uint256 amountSentLD, uint256 amountReceivedLD) = _debit(
