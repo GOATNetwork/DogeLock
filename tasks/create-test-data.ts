@@ -81,5 +81,83 @@ task('create-test-data', 'Create test data for local development').setAction(asy
     await createTestData(user2, testData[1])
     await createTestData(user3, testData[2])
 
-    console.log('Test data creation completed!')
+    // Create bridge test data
+    const createBridgeTestData = async (user: (typeof signers)[0], bridgeAmounts: string[]) => {
+        const address = await user.getAddress()
+        console.log(`Creating bridge data for user ${address}`)
+
+        for (const amount of bridgeAmounts) {
+            const amountWithDecimals = utils.parseUnits(amount, 8)
+
+            // First mint and approve tokens if needed
+            console.log(`Minting ${amount} tokens to user for bridging`)
+            await token.connect(owner).mint(address, amountWithDecimals, {
+                gasLimit: 500000,
+            })
+            await token.connect(user).approve(dogeLockAddress, amountWithDecimals, {
+                gasLimit: 500000,
+            })
+
+            // Simulate bridge send (to chain ID 2)
+            console.log(`Sending ${amount} tokens through bridge`)
+            const dstEid = 2 // Example destination chain ID
+            const minAmount = amountWithDecimals.mul(80).div(100) // 降低最小接收金额到 80%
+            const extraOptions = '0x'
+            const composeMsg = '0x'
+            const oftCmd = '0x'
+
+            // Create send params
+            const sendParam = {
+                dstEid: dstEid,
+                to: utils.hexZeroPad(address, 32),
+                amountLD: amountWithDecimals,
+                minAmountLD: minAmount,
+                extraOptions,
+                composeMsg,
+                oftCmd,
+            }
+
+            // Get quote for fees
+            try {
+                console.log('Getting quote for fees...')
+                console.log('Send params:', {
+                    dstEid: sendParam.dstEid,
+                    amountLD: sendParam.amountLD.toString(),
+                    minAmountLD: sendParam.minAmountLD.toString(),
+                })
+
+                const quote = await dogeLock.quoteSend(sendParam, false) // 第二个参数改为 false
+                console.log('Quote received:', {
+                    nativeFee: quote.nativeFee.toString(),
+                    lzTokenFee: quote.lzTokenFee.toString(),
+                })
+
+                // Execute bridge send
+                console.log('Executing bridge send...')
+                await dogeLock.connect(user).send(sendParam, { value: quote.nativeFee }, address, {
+                    gasLimit: 1000000,
+                })
+
+                console.log(`Successfully sent ${amount} tokens through bridge`)
+            } catch (error) {
+                console.error('Error during bridge operation:', error)
+                continue
+            }
+        }
+    }
+
+    // Bridge test data (amounts in DOGE)
+    const bridgeTestData = [
+        ['25', '75'], // user1: Small bridge transfers
+        ['500'], // user2: Large bridge transfer
+        ['50', '200'], // user3: Mixed bridge transfers
+    ]
+
+    // Execute bridge test data creation
+    console.log('Creating bridge test data...')
+    await createBridgeTestData(user1, bridgeTestData[0])
+    await createBridgeTestData(user2, bridgeTestData[1])
+    await createBridgeTestData(user3, bridgeTestData[2])
+
+    console.log('All test data creation completed!')
 })

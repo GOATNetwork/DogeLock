@@ -16,7 +16,12 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - DogeLock
+        - User
+        - LockEvent
+        - UnlockEvent
+        - OFTSentEvent
+        - OFTReceivedEvent
+        - GlobalStat
       abis:
         - name: DogeLock
           file: DogeLock/DogeLockUpgradeable.json
@@ -25,4 +30,8 @@ dataSources:
           handler: handleLock
         - event: Unlock(address,uint256,uint256)
           handler: handleUnlock
+        - event: OFTSent(indexed bytes32,uint32,indexed address,uint256,uint256)
+          handler: handleOFTSent
+        - event: OFTReceived(indexed bytes32,uint32,indexed address,uint256)
+          handler: handleOFTReceived
       file: DogeLock/DogeLock.wasm

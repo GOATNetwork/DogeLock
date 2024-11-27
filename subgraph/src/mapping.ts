@@ -1,7 +1,7 @@
 import { BigInt } from '@graphprotocol/graph-ts'
 
-import { Lock, Unlock } from '../generated/DogeLock/DogeLock'
-import { GlobalStat, LockEvent, UnlockEvent, User } from '../generated/schema'
+import { Lock, OFTReceived, OFTSent, Unlock } from '../generated/DogeLock/DogeLock'
+import { GlobalStat, LockEvent, OFTReceivedEvent, OFTSentEvent, UnlockEvent, User } from '../generated/schema'
 
 function getOrCreateUser(address: string): User {
     let user = User.load(address)
@@ -71,4 +71,33 @@ export function handleUnlock(event: Unlock): void {
     const global = getOrCreateGlobalStat()
     global.totalLocked = global.totalLocked.minus(event.params.amount)
     global.save()
+}
+
+export function handleOFTSent(event: OFTSent): void {
+    const user = getOrCreateUser(event.params.fromAddress.toHexString())
+
+    const sentEvent = new OFTSentEvent(event.transaction.hash.toHexString() + '-' + event.logIndex.toString())
+    sentEvent.user = user.id
+    sentEvent.guid = event.params.guid
+    sentEvent.dstChainId = event.params.dstEid
+    sentEvent.amount = event.params.amountSentLD
+    sentEvent.actualAmount = event.params.amountReceivedLD
+    sentEvent.blockNumber = event.block.number
+    sentEvent.timestamp = event.block.timestamp
+    sentEvent.transactionHash = event.transaction.hash.toHexString()
+    sentEvent.save()
+}
+
+export function handleOFTReceived(event: OFTReceived): void {
+    const user = getOrCreateUser(event.params.toAddress.toHexString())
+
+    const receivedEvent = new OFTReceivedEvent(event.transaction.hash.toHexString() + '-' + event.logIndex.toString())
+    receivedEvent.user = user.id
+    receivedEvent.guid = event.params.guid
+    receivedEvent.srcChainId = event.params.srcEid
+    receivedEvent.amount = event.params.amountReceivedLD
+    receivedEvent.blockNumber = event.block.number
+    receivedEvent.timestamp = event.block.timestamp
+    receivedEvent.transactionHash = event.transaction.hash.toHexString()
+    receivedEvent.save()
 }

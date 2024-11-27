@@ -3,28 +3,53 @@ type User @entity {
   totalLocked: BigInt!       # current total locked amount
   lockHistory: [LockEvent!]! @derivedFrom(field: "user")
   unlockHistory: [UnlockEvent!]! @derivedFrom(field: "user")
+  sentHistory: [OFTSentEvent!]! @derivedFrom(field: "user")
+  receivedHistory: [OFTReceivedEvent!]! @derivedFrom(field: "user")
 }
 
 type LockEvent @entity {
-  id: ID!                    # transaction hash-logIndex
-  user: User!                # user
-  amount: BigInt!            # locked amount
-  blockNumber: BigInt!       # block number
-  timestamp: BigInt!         # timestamp
-  transactionHash: String!   # transaction hash
+  id: ID!
+  user: User!
+  amount: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: String!
 }
 
 type UnlockEvent @entity {
-  id: ID!                    # transaction hash-logIndex
-  user: User!                # user
-  amount: BigInt!            # unlocked amount
-  blockNumber: BigInt!       # block number
-  timestamp: BigInt!         # timestamp
-  transactionHash: String!   # transaction hash
+  id: ID!
+  user: User!
+  amount: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: String!
+}
+
+type OFTSentEvent @entity {
+  id: ID!
+  user: User!
+  guid: Bytes!           # indexed bytes32
+  dstChainId: BigInt!    # BigInt
+  amount: BigInt!
+  actualAmount: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: String!
+}
+
+type OFTReceivedEvent @entity {
+  id: ID!
+  user: User!
+  guid: Bytes!          # indexed bytes32
+  srcChainId: BigInt!   # BigInt
+  amount: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: String!
 }
 
 type GlobalStat @entity {
-  id: ID!                    # fixed as "global"
-  totalLocked: BigInt!       # global total locked amount
-  userCount: BigInt!         # total user count
+  id: ID!
+  totalLocked: BigInt!
+  userCount: BigInt!
 }
