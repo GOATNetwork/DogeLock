@@ -1,32 +1,4 @@
-<p align="center">
-  <a href="https://layerzero.network">
-    <img alt="LayerZero" style="width: 400px" src="https://docs.layerzero.network/img/LayerZero_Logo_White.svg"/>
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://layerzero.network" style="color: #a77dff">Homepage</a> | <a href="https://docs.layerzero.network/" style="color: #a77dff">Docs</a> | <a href="https://layerzero.network/developers" style="color: #a77dff">Developers</a>
-</p>
-
-<h1 align="center">OFTAdapter Example</h1>
-
-<p align="center">
-  <a href="https://docs.layerzero.network/v2/developers/evm/oft/adapter" style="color: #a77dff">Quickstart</a> | <a href="https://docs.layerzero.network/contracts/oapp-configuration" style="color: #a77dff">Configuration</a> | <a href="https://docs.layerzero.network/contracts/options" style="color: #a77dff">Message Execution Options</a> | <a href="https://docs.layerzero.network/contracts/endpoint-addresses" style="color: #a77dff">Endpoint Addresses</a>
-</p>
-
-<p align="center">Template project for getting started with LayerZero's <code>OFTAdapter</code> contract development.</p>
-
-### OFTAdapter additional setup:
-
-- In your `hardhat.config.ts` file, add the following configuration to the network you want to deploy the OFTAdapter to:
-  ```typescript
-  // Replace `0x0` with the address of the ERC20 token you want to adapt to the OFT functionality.
-  oftAdapter: {
-      tokenAddress: '0x0',
-  }
-  ```
-
-## 1) Developing Contracts
+## 1) Setup Project
 
 #### Installing dependencies
 
@@ -102,6 +74,12 @@ PRIVATE_KEY="0xabc...def"
 To deploy your contracts to your desired blockchains, run the following command in your project's folder:
 
 ```bash
+npx hardhat run deploy/DEPLOY_SCRIPT.ts
+```
+
+To deploy Layer Zero contracts, run the following command:
+
+```bash
 npx hardhat lz:deploy
 ```
 
@@ -110,11 +88,3 @@ More information about available CLI arguments can be found using the `--help` f
 ```bash
 npx hardhat lz:deploy --help
 ```
-
-By following these steps, you can focus more on creating innovative omnichain solutions and less on the complexities of cross-chain communication.
-
-<br></br>
-
-<p align="center">
-  Join our community on <a href="https://discord-layerzero.netlify.app/discord" style="color: #a77dff">Discord</a> | Follow us on <a href="https://twitter.com/LayerZero_Labs" style="color: #a77dff">Twitter</a>
-</p>
