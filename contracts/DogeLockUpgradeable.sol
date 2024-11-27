@@ -92,7 +92,8 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
         dogeCoin.safeTransferFrom(msg.sender, address(this), _amount);
         balances[msg.sender] += _amount;
         totalBalance += _amount;
-        require(balances[msg.sender] <= personalMaxLockAmount && totalBalance <= maxLockAmount, ExceededMax());
+        require(balances[msg.sender] <= personalMaxLockAmount, ExceededPersonalMax());
+        require(totalBalance <= maxLockAmount, ExceededTotalMax());
         emit Lock(msg.sender, _amount, block.number);
     }
 
@@ -102,7 +103,7 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
      * @dev The amount and unlock time is recorded for points calculation on Goat Network
      */
     function unlock(uint256 _amount) external {
-        require(_amount <= balances[msg.sender], ExceededAmount());
+        require(_amount <= balances[msg.sender], ExceededBalance());
         balances[msg.sender] -= _amount;
         totalBalance -= _amount;
         dogeCoin.safeTransfer(msg.sender, _amount);
