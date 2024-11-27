@@ -4,6 +4,8 @@ import { join } from 'path'
 import { utils } from 'ethers'
 import { task } from 'hardhat/config'
 
+import { Options } from '@layerzerolabs/lz-v2-utilities'
+
 task('create-test-data', 'Create test data for local development').setAction(async (_, { ethers, network }) => {
     if (network.name !== 'localhost' && network.name !== 'dev') {
         console.error('This task is only for localhost or dev network')
@@ -16,14 +18,14 @@ task('create-test-data', 'Create test data for local development').setAction(asy
     console.log('Creating test data with owner:', await owner.getAddress())
 
     // Get contract instance
-    const localnetPath = join(__dirname, '../subgraph/localnet.json')
-    if (!existsSync(localnetPath)) {
-        throw new Error('localnet.json not found. Please deploy contracts first')
+    const deploymentPath = join(__dirname, `../subgraph/${network.name}.json`)
+    if (!existsSync(deploymentPath)) {
+        throw new Error(`${network.name}.json not found. Please deploy contracts first`)
     }
 
-    const { DogeLock: dogeLockAddress, Token: tokenAddress } = require(localnetPath)
+    const { DogeLock: dogeLockAddress, Token: tokenAddress } = require(deploymentPath)
     if (!dogeLockAddress || !tokenAddress) {
-        throw new Error('Contract addresses not found in localnet.json')
+        throw new Error(`Contract addresses not found in ${network.name}.json`)
     }
 
     console.log('Using DogeLock at:', dogeLockAddress)
@@ -98,47 +100,41 @@ task('create-test-data', 'Create test data for local development').setAction(asy
                 gasLimit: 500000,
             })
 
-            // Simulate bridge send (to chain ID 2)
-            console.log(`Sending ${amount} tokens through bridge`)
-            const dstEid = 2 // Example destination chain ID
-            const minAmount = amountWithDecimals.mul(80).div(100) // Reduce minimum receive amount to 80%
-            const extraOptions = '0x'
-            const composeMsg = '0x'
-            const oftCmd = '0x'
-
-            // Create send params
-            const sendParam = {
-                dstEid: dstEid,
-                to: utils.hexZeroPad(address, 32),
-                amountLD: amountWithDecimals,
-                minAmountLD: minAmount,
-                extraOptions,
-                composeMsg,
-                oftCmd,
-            }
-
-            // Get quote for fees
             try {
+                const extraOptions = Options.newOptions().addExecutorLzReceiveOption(200000, 0).toHex().toString()
+
+                const sendParam = {
+                    dstEid: 2,
+                    to: ethers.utils.zeroPad(address, 32),
+                    amountLD: amountWithDecimals,
+                    minAmountLD: amountWithDecimals.mul(95).div(100),
+                    extraOptions,
+                    composeMsg: '0x',
+                    oftCmd: '0x',
+                }
+
                 console.log('Getting quote for fees...')
                 console.log('Send params:', {
                     dstEid: sendParam.dstEid,
                     amountLD: sendParam.amountLD.toString(),
                     minAmountLD: sendParam.minAmountLD.toString(),
+                    extraOptions: sendParam.extraOptions,
                 })
 
-                const quote = await dogeLock.quoteSend(sendParam, false) // Set second parameter to false
+                const quote = await dogeLock.quoteSend(sendParam, false)
                 console.log('Quote received:', {
                     nativeFee: quote.nativeFee.toString(),
                     lzTokenFee: quote.lzTokenFee.toString(),
                 })
 
-                // Execute bridge send
-                console.log('Executing bridge send...')
-                await dogeLock.connect(user).send(sendParam, { value: quote.nativeFee }, address, {
-                    gasLimit: 1000000,
-                })
+                // 执行 bridge
+                console.log(`Bridging ${amount} tokens`)
+                const tx = await dogeLock
+                    .connect(user)
+                    .bridge(sendParam, quote, address, { value: quote.nativeFee, gasLimit: 1000000 })
+                await tx.wait()
 
-                console.log(`Successfully sent ${amount} tokens through bridge`)
+                console.log(`Successfully bridged ${amount} tokens`)
             } catch (error) {
                 console.error('Error during bridge operation:', error)
                 continue

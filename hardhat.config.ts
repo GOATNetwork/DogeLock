@@ -92,6 +92,11 @@ const config: HardhatUserConfig = {
             url: 'http://localhost:8545',
             chainId: 1337,
         },
+        testnet: {
+            url: 'https://rpc.testnet.goat.network',
+            chainId: 48815,
+            accounts,
+        },
     },
     namedAccounts: {
         deployer: {
