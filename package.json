@@ -16,17 +16,17 @@
     "test:forge": "forge test",
     "test:hardhat": "hardhat test",
     "start-local-node": "hardhat node --port 8545 --hostname 0.0.0.0 --no-deploy",
-    "deploy-contracts": "hardhat run deploy/DogeLockTestDeploy.ts --network localhost",
-    "prepare-subgraph": "cd subgraph && mustache localnet.json subgraph.yaml.template > subgraph.yaml",
+    "deploy-contracts:localhost": "hardhat run deploy/DogeLockTestDeploy.ts --network localhost",
+    "deploy-contracts:testnet": "hardhat run deploy/DogeLockTestDeploy.ts --network testnet",
+    "prepare-subgraph:localhost": "cd subgraph && mustache localnet.json subgraph.yaml.template > subgraph.yaml",
+    "prepare-subgraph:testnet": "cd subgraph && mustache testnet.json subgraph.yaml.template > subgraph.yaml",
     "codegen": "cd subgraph && graph codegen subgraph.yaml",
     "build-subgraph": "cd subgraph && graph build",
     "create-local-subgraph": "cd subgraph && graph create --node http://localhost:8020 goat-dogelock",
     "remove-local-subgraph": "cd subgraph && graph remove --node http://localhost:8020 goat-dogelock",
     "deploy-local-subgraph": "cd subgraph && graph deploy --node http://localhost:8020 --ipfs http://localhost:5001 goat-dogelock",
-    "subgraph-local-init": "npm run prepare-subgraph && npm run codegen && npm run build-subgraph && npm run remove-local-subgraph || true && npm run create-local-subgraph && npm run deploy-local-subgraph",
-    "subgraph-local": "npm run prepare-subgraph && npm run codegen && npm run build-subgraph && npm run deploy-local-subgraph",
     "clean:graph": "cd subgraph && docker-compose down && rm -rf ../.data && docker-compose up -d",
-    "restart:graph": "npm run clean:graph && npm run codegen && npm run build-subgraph && npm run create-local && npm run deploy-local"
+    "restart:graph": "npm run clean:graph && npm run codegen && npm run build-subgraph && npm run create-local-subgraph && npm run deploy-local-subgraph"
   },
   "resolutions": {
     "ethers": "^5.7.2",
