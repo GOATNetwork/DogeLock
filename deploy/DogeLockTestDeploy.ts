@@ -1,5 +1,8 @@
-import { ethers } from 'hardhat'
+import * as fs from 'fs'
+import * as path from 'path'
+
 import { BigNumber } from 'ethers'
+import { ethers } from 'hardhat'
 
 async function main() {
     const [deployer] = await ethers.getSigners()
@@ -42,6 +45,17 @@ async function main() {
     console.log('Mock TokenA:', tokenB.address)
     console.log('Mock EndpointA:', mockEndpointV2B.address)
     console.log('Doge Lock:', myOFTAdapter.address)
+
+    // Save deployment info for subgraph
+    const deploymentInfo = {
+        DogeLock: dogeLock.address,
+        Token: token.address,
+        EndpointV2: mockEndpointV2A.address,
+        blockNumber: (await ethers.provider.getBlock('latest')).number,
+    }
+
+    const filePath = path.join(__dirname, '../subgraph/localnet.json')
+    fs.writeFileSync(filePath, JSON.stringify(deploymentInfo, null, 2))
 }
 
 main().catch((error) => {

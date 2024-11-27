@@ -1,0 +1,55 @@
+type User @entity {
+  id: ID!                    # user address
+  totalLocked: BigInt!       # current total locked amount
+  lockHistory: [LockEvent!]! @derivedFrom(field: "user")
+  unlockHistory: [UnlockEvent!]! @derivedFrom(field: "user")
+  sentHistory: [OFTSentEvent!]! @derivedFrom(field: "user")
+  receivedHistory: [OFTReceivedEvent!]! @derivedFrom(field: "user")
+}
+
+type LockEvent @entity {
+  id: ID!
+  user: User!
+  amount: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: String!
+}
+
+type UnlockEvent @entity {
+  id: ID!
+  user: User!
+  amount: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: String!
+}
+
+type OFTSentEvent @entity {
+  id: ID!
+  user: User!
+  guid: Bytes!           # indexed bytes32
+  dstChainId: BigInt!    # BigInt
+  amount: BigInt!
+  actualAmount: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: String!
+}
+
+type OFTReceivedEvent @entity {
+  id: ID!
+  user: User!
+  guid: Bytes!          # indexed bytes32
+  srcChainId: BigInt!   # BigInt
+  amount: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: String!
+}
+
+type GlobalStat @entity {
+  id: ID!
+  totalLocked: BigInt!
+  userCount: BigInt!
+}

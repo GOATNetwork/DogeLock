@@ -1,0 +1,37 @@
+specVersion: 0.0.4
+description: Subgraph for GOAT DogeLock
+repository: https://github.com/GOATNetwork/DogeLock
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: DogeLock
+    network: localhost
+    source:
+      address: "{{DogeLock}}"
+      abi: DogeLock
+      startBlock: {{blockNumber}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - User
+        - LockEvent
+        - UnlockEvent
+        - OFTSentEvent
+        - OFTReceivedEvent
+        - GlobalStat
+      abis:
+        - name: DogeLock
+          file: ../artifacts/contracts/DogeLockUpgradeable.sol/DogeLockUpgradeable.json
+      eventHandlers:
+        - event: Lock(address,uint256,uint256)
+          handler: handleLock
+        - event: Unlock(address,uint256,uint256)
+          handler: handleUnlock
+        - event: OFTSent(indexed bytes32,uint32,indexed address,uint256,uint256)
+          handler: handleOFTSent
+        - event: OFTReceived(indexed bytes32,uint32,indexed address,uint256)
+          handler: handleOFTReceived
+      file: ./src/mapping.ts
