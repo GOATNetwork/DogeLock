@@ -24,7 +24,9 @@
     "remove-local-subgraph": "cd subgraph && graph remove --node http://localhost:8020 goat-dogelock",
     "deploy-local-subgraph": "cd subgraph && graph deploy --node http://localhost:8020 --ipfs http://localhost:5001 goat-dogelock",
     "subgraph-local-init": "npm run prepare-subgraph && npm run codegen && npm run build-subgraph && npm run remove-local-subgraph || true && npm run create-local-subgraph && npm run deploy-local-subgraph",
-    "subgraph-local": "npm run prepare-subgraph && npm run codegen && npm run build-subgraph && npm run deploy-local-subgraph"
+    "subgraph-local": "npm run prepare-subgraph && npm run codegen && npm run build-subgraph && npm run deploy-local-subgraph",
+    "clean:graph": "cd subgraph && docker-compose down && rm -rf ../.data && docker-compose up -d",
+    "restart:graph": "npm run clean:graph && npm run codegen && npm run build-subgraph && npm run create-local && npm run deploy-local"
   },
   "resolutions": {
     "ethers": "^5.7.2",
