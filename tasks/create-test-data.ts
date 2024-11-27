@@ -101,7 +101,7 @@ task('create-test-data', 'Create test data for local development').setAction(asy
             // Simulate bridge send (to chain ID 2)
             console.log(`Sending ${amount} tokens through bridge`)
             const dstEid = 2 // Example destination chain ID
-            const minAmount = amountWithDecimals.mul(80).div(100) // 降低最小接收金额到 80%
+            const minAmount = amountWithDecimals.mul(80).div(100) // Reduce minimum receive amount to 80%
             const extraOptions = '0x'
             const composeMsg = '0x'
             const oftCmd = '0x'
@@ -126,7 +126,7 @@ task('create-test-data', 'Create test data for local development').setAction(asy
                     minAmountLD: sendParam.minAmountLD.toString(),
                 })
 
-                const quote = await dogeLock.quoteSend(sendParam, false) // 第二个参数改为 false
+                const quote = await dogeLock.quoteSend(sendParam, false) // Set second parameter to false
                 console.log('Quote received:', {
                     nativeFee: quote.nativeFee.toString(),
                     lzTokenFee: quote.lzTokenFee.toString(),
