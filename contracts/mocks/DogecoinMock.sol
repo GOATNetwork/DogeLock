@@ -11,7 +11,7 @@ contract DogecoinMock is ERC20 {
         _mint(_to, _amount);
     }
 
-    function decimals() public view override returns (uint8) {
+    function decimals() public pure override returns (uint8) {
         return 8;
     }
 }
