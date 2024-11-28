@@ -121,7 +121,7 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
      * @return oftReceipt The OFT receipt information.
      * @dev The amount and unlock time is recorded for points calculation on Goat Network
      */
-    function send(
+    function bridge(
         SendParam calldata _sendParam,
         MessagingFee calldata _fee,
         address _refundAddress
@@ -130,7 +130,7 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
         // @dev Applies the token transfers regarding this bridge() operation.
         // - amountSentLD is the amount in local decimals that was ACTUALLY sent/debited from the sender.
         // - amountReceivedLD is the amount in local decimals that will be received/credited to the recipient on the remote OFT instance.
-        (uint256 amountSentLD, uint256 amountReceivedLD) = _debit(
+        (uint256 amountSentLD, uint256 amountReceivedLD) = _bridgeDebit(
             msg.sender,
             _sendParam.amountLD,
             _sendParam.minAmountLD,
@@ -158,31 +158,14 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
      * @return amountSentLD The amount sent in local decimals.
      * @return amountReceivedLD The amount received in local decimals on the remote.
      */
-    function _debit(
+    function _bridgeDebit(
         address _from,
         uint256 _amountLD,
         uint256 _minAmountLD,
         uint32 _dstEid
-    ) internal override returns (uint256 amountSentLD, uint256 amountReceivedLD) {
+    ) internal returns (uint256 amountSentLD, uint256 amountReceivedLD) {
         // @dev return the amount after removeDust(), check if it's below the min amount
         (amountSentLD, amountReceivedLD) = _debitView(_amountLD, _minAmountLD, _dstEid);
         balances[_from] -= amountSentLD;
-    }
-
-    /**
-     * @dev Credits tokens to the specified address.
-     * @param _to The address to credit the tokens to.
-     * @param _amountLD The amount of tokens to credit in local decimals.
-     * @dev _srcEid The source chain ID.
-     * @return amountReceivedLD The amount of tokens ACTUALLY received in local decimals.
-     */
-    function _credit(
-        address _to,
-        uint256 _amountLD,
-        uint32 /*_srcEid*/
-    ) internal virtual override returns (uint256 amountReceivedLD) {
-        balances[msg.sender] += _amountLD;
-        // @dev In the case of NON-default OFTAdapter, the amountLD MIGHT not be == amountReceivedLD.
-        return _amountLD;
     }
 }
