@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import { OFTAdapterUpgradeable } from "@layerzerolabs/oft-evm-upgradeable/contracts/oft/OFTAdapterUpgradeable.sol";
+import { OFTUpgradeable } from "@layerzerolabs/oft-evm-upgradeable/contracts/oft/OFTUpgradeable.sol";
 import { SendParam, OFTReceipt, MessagingReceipt, MessagingFee } from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
 import { SafeERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IDogeLock } from "./interfaces/IDogeLock.sol";
@@ -9,13 +9,14 @@ import { IDogeLock } from "./interfaces/IDogeLock.sol";
 /**
  * @dev Locking and bridging contract for Dogecoin.
  */
-contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
+contract DogeForGoatUpgradeable is IDogeLock, OFTUpgradeable {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable dogeCoin;
     uint256 public immutable bridgeTime;
 
-    uint256 constant DECIMAL = 100_000_000;
+    // Conversion rate from Dogecoin (8 decimals) to Wrapped Dogecoin (18 decimals)
+    uint256 private constant CONVERSION_MULTIPLIER = 10 ** 10;
 
     uint256 public maxLockAmount;
     uint256 public personalMaxLockAmount;
@@ -30,11 +31,7 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
      * @param _lzEndpoint The LayerZero endpoint address.
      * @param _bridgeTime Time the users can bridge their tokens to Goat Network
      */
-    constructor(
-        address _dogeCoin,
-        address _lzEndpoint,
-        uint256 _bridgeTime
-    ) OFTAdapterUpgradeable(_dogeCoin, _lzEndpoint) {
+    constructor(address _dogeCoin, address _lzEndpoint, uint256 _bridgeTime) OFTUpgradeable(_lzEndpoint) {
         bridgeTime = _bridgeTime;
         dogeCoin = IERC20(_dogeCoin);
     }
@@ -44,11 +41,11 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
      * @param _owner The owner/delegate of the contract/OFTAdapter
      */
     function initialize(address _owner) external initializer {
-        __OFTAdapter_init(_owner);
+        __OFT_init("Doge For Goat", "DFG", _owner);
         __Ownable_init(_owner);
-        maxLockAmount = 20_000_000 * DECIMAL;
-        personalMaxLockAmount = 5_000_000 * DECIMAL;
-        personalMinLockAmount = 50 * DECIMAL;
+        maxLockAmount = 20_000_000 ether;
+        personalMaxLockAmount = 5_000_000 ether;
+        personalMinLockAmount = 50 ether;
     }
 
     /**
@@ -80,6 +77,26 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
         personalMinLockAmount = _min;
     }
 
+    function decimals() public pure override returns (uint8) {
+        return 18;
+    }
+
+    /**
+     * @dev Allow a user to deposit underlying tokens and mint the corresponding number of wrapped tokens.
+     */
+    function deposit(uint256 value) public {
+        dogeCoin.safeTransferFrom(msg.sender, address(this), value);
+        _mint(msg.sender, value * CONVERSION_MULTIPLIER);
+    }
+
+    /**
+     * @dev Allow a user to burn a number of wrapped tokens and withdraw the corresponding number of underlying tokens.
+     */
+    function withdraw(uint256 value) public {
+        _burn(msg.sender, value);
+        dogeCoin.safeTransfer(msg.sender, value / CONVERSION_MULTIPLIER);
+    }
+
     /**
      * @dev Lock user's Dogecoin into this contract
      * @param _amount The amount the user wishes to lock
@@ -88,8 +105,9 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
      * @dev The final amount cannot be less than the personal min or more than personal/total max
      */
     function lock(uint256 _amount) external {
+        deposit(_amount);
+        _amount *= CONVERSION_MULTIPLIER;
         require(_amount >= personalMinLockAmount, BelowMin());
-        dogeCoin.safeTransferFrom(msg.sender, address(this), _amount);
         balances[msg.sender] += _amount;
         totalBalance += _amount;
         require(balances[msg.sender] <= personalMaxLockAmount, ExceededPersonalMax(balances[msg.sender]));
@@ -106,7 +124,7 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
         require(_amount <= balances[msg.sender], ExceededBalance(balances[msg.sender]));
         balances[msg.sender] -= _amount;
         totalBalance -= _amount;
-        dogeCoin.safeTransfer(msg.sender, _amount);
+        withdraw(_amount);
         emit Unlock(msg.sender, _amount, block.number);
     }
 

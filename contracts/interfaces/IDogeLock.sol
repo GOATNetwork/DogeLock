@@ -10,9 +10,9 @@ interface IDogeLock {
 
     // Custom errors
     error InvalidAmount();
-    error ExceededBalance();
-    error ExceededPersonalMax();
-    error ExceededTotalMax();
+    error ExceededBalance(uint256);
+    error ExceededPersonalMax(uint256);
+    error ExceededTotalMax(uint256);
     error BelowMin();
     error TimeNotReached();
 
