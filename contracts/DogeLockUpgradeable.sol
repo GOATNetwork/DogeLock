@@ -121,11 +121,11 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
      * @return oftReceipt The OFT receipt information.
      * @dev The amount and unlock time is recorded for points calculation on Goat Network
      */
-    function bridge(
+    function send(
         SendParam calldata _sendParam,
         MessagingFee calldata _fee,
         address _refundAddress
-    ) external payable returns (MessagingReceipt memory msgReceipt, OFTReceipt memory oftReceipt) {
+    ) external payable override returns (MessagingReceipt memory msgReceipt, OFTReceipt memory oftReceipt) {
         require(block.timestamp >= bridgeTime, TimeNotReached());
         // @dev Applies the token transfers regarding this bridge() operation.
         // - amountSentLD is the amount in local decimals that was ACTUALLY sent/debited from the sender.
@@ -138,6 +138,7 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
         );
 
         // @dev Builds the options and OFT message to quote in the endpoint.
+        // @param message encoded (address(to), amountSD, composed message)
         (bytes memory message, bytes memory options) = _buildMsgAndOptions(_sendParam, amountReceivedLD);
 
         // @dev Sends the message to the LayerZero endpoint and returns the LayerZero msg receipt.
@@ -163,7 +164,25 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
         uint256 _minAmountLD,
         uint32 _dstEid
     ) internal override returns (uint256 amountSentLD, uint256 amountReceivedLD) {
+        // @dev return the amount after removeDust(), check if it's below the min amount
         (amountSentLD, amountReceivedLD) = _debitView(_amountLD, _minAmountLD, _dstEid);
         balances[_from] -= amountSentLD;
+    }
+
+    /**
+     * @dev Credits tokens to the specified address.
+     * @param _to The address to credit the tokens to.
+     * @param _amountLD The amount of tokens to credit in local decimals.
+     * @dev _srcEid The source chain ID.
+     * @return amountReceivedLD The amount of tokens ACTUALLY received in local decimals.
+     */
+    function _credit(
+        address _to,
+        uint256 _amountLD,
+        uint32 /*_srcEid*/
+    ) internal virtual override returns (uint256 amountReceivedLD) {
+        balances[msg.sender] += _amountLD;
+        // @dev In the case of NON-default OFTAdapter, the amountLD MIGHT not be == amountReceivedLD.
+        return _amountLD;
     }
 }
