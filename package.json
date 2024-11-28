@@ -4,10 +4,16 @@
   "private": true,
   "license": "MIT",
   "scripts": {
+    "build-subgraph": "cd subgraph && graph build",
     "clean": "rm -rf artifacts cache out",
+    "clean:graph": "cd subgraph && docker-compose down && rm -rf ../.data && docker-compose up -d",
+    "codegen": "cd subgraph && graph codegen subgraph.yaml",
     "compile": "concurrently -c auto --names forge,hardhat '$npm_execpath run compile:forge' '$npm_execpath run compile:hardhat'",
     "compile:forge": "forge build",
     "compile:hardhat": "hardhat compile",
+    "create-local-subgraph": "cd subgraph && graph create --node http://localhost:8020 goat-dogelock",
+    "deploy-contracts": "hardhat run deploy/DogeLockTestDeploy.ts --network localhost",
+    "deploy-local-subgraph": "cd subgraph && graph deploy --node http://localhost:8020 --ipfs http://localhost:5001 goat-dogelock",
     "lint": "$npm_execpath run lint:js && $npm_execpath run lint:sol",
     "lint:fix": "eslint --fix '**/*.{js,ts,json}' && prettier --write . && solhint 'contracts/**/*.sol' --fix --noPrompt",
     "lint:js": "eslint '**/*.{js,ts,json}' && prettier --check .",
@@ -32,6 +38,9 @@
     "ethers": "^5.7.2",
     "hardhat-deploy": "^0.12.1"
   },
+  "dependencies": {
+    "@graphprotocol/graph-ts": "^0.35.1"
+  },
   "devDependencies": {
     "@babel/core": "^7.23.9",
     "@graphprotocol/graph-cli": "^0.89.0",
@@ -50,6 +59,8 @@
     "@layerzerolabs/test-devtools-evm-foundry": "~5.1.0",
     "@layerzerolabs/toolbox-foundry": "~0.1.9",
     "@layerzerolabs/toolbox-hardhat": "~0.6.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.2",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.12",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@openzeppelin/contracts": "^5.0.2",
     "@openzeppelin/contracts-upgradeable": "^5.0.2",
@@ -58,19 +69,21 @@
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
     "@types/node": "~18.18.14",
-    "chai": "^4.4.1",
+    "chai": "^4.5.0",
     "concurrently": "~9.1.0",
     "dotenv": "^16.4.1",
     "eslint": "^8.55.0",
     "eslint-plugin-jest-extended": "~2.0.0",
+    "ethereum-waffle": "^4.0.10",
     "ethers": "^5.7.2",
     "hardhat": "^2.22.10",
     "hardhat-contract-sizer": "^2.10.0",
     "hardhat-deploy": "^0.12.1",
-    "mocha": "^10.2.0",
+    "mocha": "^10.8.2",
     "prettier": "^3.2.5",
     "solhint": "^4.1.1",
     "solidity-bytes-utils": "^0.8.2",
+    "solidity-coverage": "^0.8.14",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.4"
   },
@@ -86,8 +99,5 @@
   "overrides": {
     "ethers": "^5.7.2",
     "hardhat-deploy": "^0.12.1"
-  },
-  "dependencies": {
-    "@graphprotocol/graph-ts": "^0.35.1"
   }
 }
