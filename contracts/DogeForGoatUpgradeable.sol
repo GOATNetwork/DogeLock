@@ -17,9 +17,6 @@ contract DogeForGoatUpgradeable is OFTUpgradeable {
     // Conversion rate from Dogecoin (8 decimals) to Wrapped Dogecoin (18 decimals)
     uint256 private constant CONVERSION_MULTIPLIER = 10 ** 10;
 
-    mapping(address user => uint256 balance) public balances;
-    uint256 public totalBalance;
-
     /**
      * @dev Constructor for the DogeLockUpgradeable contract.
      * @param _dogeCoin The address of the Dogecoin token.
@@ -54,16 +51,26 @@ contract DogeForGoatUpgradeable is OFTUpgradeable {
     /**
      * @dev Allow a user to deposit underlying tokens and mint the corresponding number of wrapped tokens.
      */
-    function deposit(uint256 value) public {
-        dogeCoin.safeTransferFrom(msg.sender, address(this), value);
-        _mint(msg.sender, value * CONVERSION_MULTIPLIER);
+    function deposit(uint256 _value) public {
+        dogeCoin.safeTransferFrom(msg.sender, address(this), _value);
+        _mint(msg.sender, _value * CONVERSION_MULTIPLIER);
     }
 
     /**
      * @dev Allow a user to burn a number of wrapped tokens and withdraw the corresponding number of underlying tokens.
      */
-    function withdraw(uint256 value) public {
-        _burn(msg.sender, value);
-        dogeCoin.safeTransfer(msg.sender, value / CONVERSION_MULTIPLIER);
+    function withdraw(uint256 _value) public {
+        _burn(msg.sender, _value);
+        dogeCoin.safeTransfer(msg.sender, _value / CONVERSION_MULTIPLIER);
+    }
+
+    /**
+     * @dev Mint wrapped token to cover any dogecoin that would have been transferred by mistake or acquired from
+     * rebasing mechanisms.
+     */
+    function recover(address _account) public onlyOwner returns (uint256) {
+        uint256 value = dogeCoin.balanceOf(address(this)) * CONVERSION_MULTIPLIER - totalSupply();
+        _mint(_account, value);
+        return value;
     }
 }
