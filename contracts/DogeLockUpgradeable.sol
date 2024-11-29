@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import { OFTAdapterUpgradeable } from "@layerzerolabs/oft-evm-upgradeable/contracts/oft/OFTAdapterUpgradeable.sol";
-import { SendParam, OFTReceipt, MessagingReceipt, MessagingFee } from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
+import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { SafeERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IDogeLock } from "./interfaces/IDogeLock.sol";
 
 /**
  * @dev Locking and bridging contract for Dogecoin.
  */
-contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
+contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable dogeCoin;
@@ -27,14 +26,9 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
     /**
      * @dev Constructor for the DogeLockUpgradeable contract.
      * @param _dogeCoin The address of the Dogecoin token.
-     * @param _lzEndpoint The LayerZero endpoint address.
      * @param _bridgeTime Time the users can bridge their tokens to Goat Network
      */
-    constructor(
-        address _dogeCoin,
-        address _lzEndpoint,
-        uint256 _bridgeTime
-    ) OFTAdapterUpgradeable(_dogeCoin, _lzEndpoint) {
+    constructor(address _dogeCoin, uint256 _bridgeTime) {
         bridgeTime = _bridgeTime;
         dogeCoin = IERC20(_dogeCoin);
     }
@@ -44,20 +38,10 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
      * @param _owner The owner/delegate of the contract/OFTAdapter
      */
     function initialize(address _owner) external initializer {
-        __OFTAdapter_init(_owner);
         __Ownable_init(_owner);
         maxLockAmount = 20_000_000 * DECIMAL;
         personalMaxLockAmount = 5_000_000 * DECIMAL;
         personalMinLockAmount = 50 * DECIMAL;
-    }
-
-    /**
-     * @dev Helper function to convert address to Bytes32 for peer setup
-     * @param _addr The address needed to be converted
-     * @return The converted address
-     */
-    function addressToBytes32(address _addr) external pure returns (bytes32) {
-        return bytes32(uint256(uint160(_addr)));
     }
 
     /**
@@ -108,64 +92,5 @@ contract DogeLockUpgradeable is IDogeLock, OFTAdapterUpgradeable {
         totalBalance -= _amount;
         dogeCoin.safeTransfer(msg.sender, _amount);
         emit Unlock(msg.sender, _amount, block.number);
-    }
-
-    /**
-     * @dev Bridge user's Dogecoin onto Goat Network
-     * @param _sendParam The bridging operation paramters
-     * @param _fee The calculated fee for the bridge() operation.
-     *      - nativeFee: The native fee.
-     *      - lzTokenFee: The lzToken fee.
-     * @param _refundAddress The address to receive any excess funds.
-     * @return msgReceipt The receipt for the send operation.
-     * @return oftReceipt The OFT receipt information.
-     * @dev The amount and unlock time is recorded for points calculation on Goat Network
-     */
-    function bridge(
-        SendParam calldata _sendParam,
-        MessagingFee calldata _fee,
-        address _refundAddress
-    ) external payable override returns (MessagingReceipt memory msgReceipt, OFTReceipt memory oftReceipt) {
-        require(block.timestamp >= bridgeTime, TimeNotReached());
-        // @dev Applies the token transfers regarding this bridge() operation.
-        // - amountSentLD is the amount in local decimals that was ACTUALLY sent/debited from the sender.
-        // - amountReceivedLD is the amount in local decimals that will be received/credited to the recipient on the remote OFT instance.
-        (uint256 amountSentLD, uint256 amountReceivedLD) = _bridgeDebit(
-            msg.sender,
-            _sendParam.amountLD,
-            _sendParam.minAmountLD,
-            _sendParam.dstEid
-        );
-
-        // @dev Builds the options and OFT message to quote in the endpoint.
-        // @param message encoded (address(to), amountSD, composed message)
-        (bytes memory message, bytes memory options) = _buildMsgAndOptions(_sendParam, amountReceivedLD);
-
-        // @dev Sends the message to the LayerZero endpoint and returns the LayerZero msg receipt.
-        msgReceipt = _lzSend(_sendParam.dstEid, message, options, _fee, _refundAddress);
-        // @dev Formulate the OFT receipt.
-        oftReceipt = OFTReceipt(amountSentLD, amountReceivedLD);
-
-        emit OFTSent(msgReceipt.guid, _sendParam.dstEid, msg.sender, amountSentLD, amountReceivedLD);
-    }
-
-    /**
-     * @dev Decrease token balance of the sender
-     * @param _from The address to debit from.
-     * @param _amountLD The amount of tokens to send in local decimals.
-     * @param _minAmountLD The minimum amount to send in local decimals.
-     * @param _dstEid The destination chain ID.
-     * @return amountSentLD The amount sent in local decimals.
-     * @return amountReceivedLD The amount received in local decimals on the remote.
-     */
-    function _bridgeDebit(
-        address _from,
-        uint256 _amountLD,
-        uint256 _minAmountLD,
-        uint32 _dstEid
-    ) internal returns (uint256 amountSentLD, uint256 amountReceivedLD) {
-        // @dev return the amount after removeDust(), check if it's below the min amount
-        (amountSentLD, amountReceivedLD) = _debitView(_amountLD, _minAmountLD, _dstEid);
-        balances[_from] -= amountSentLD;
     }
 }

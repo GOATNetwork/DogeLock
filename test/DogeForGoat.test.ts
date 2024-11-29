@@ -35,7 +35,6 @@ describe('Doge Lock Test', function () {
     // Before hook for setup that runs once before all tests in the block
     before(async function () {
         // Contract factory for our tested contract
-        //
         DogeForGoat = await ethers.getContractFactory('DogeForGoatUpgradeable')
 
         GoatOFT = await ethers.getContractFactory('GoatOFT')
@@ -67,13 +66,9 @@ describe('Doge Lock Test', function () {
         dogecoin = await DogecoinMock.deploy('Dogecoin', 'DOG')
 
         // Deploying two instances of GoatOFT contract with different identifiers and linking them to the mock LZEndpoint
-        dogeForGoat = await DogeForGoat.deploy(
-            dogecoin.address,
-            mockEndpointV2A.address,
-            (await ethers.provider.getBlock('latest')).timestamp + 100
-        )
+        dogeForGoat = await DogeForGoat.deploy(dogecoin.address, mockEndpointV2A.address)
         await dogeForGoat.initialize(ownerA.address)
-        goatOFT = await GoatOFT.deploy('bOFT', 'bOFT', mockEndpointV2B.address, ownerB.address)
+        goatOFT = await GoatOFT.deploy('Goat OFT', 'GOFT', mockEndpointV2B.address, ownerB.address)
 
         // Setting destination endpoints in the LZEndpoint mock for each GoatOFT instance
         await mockEndpointV2A.setDestLzEndpoint(goatOFT.address, mockEndpointV2B.address)
@@ -113,102 +108,27 @@ describe('Doge Lock Test', function () {
         const [nativeFee] = await dogeForGoat.quoteSend(sendParam, false)
 
         // Approving the native fee to be spent by the myOFTA contract
-        await dogecoin.connect(ownerA).approve(dogeForGoat.address, tokensToSendLD)
-        await dogeForGoat.lock(tokensToSendLD)
+        await dogecoin.connect(ownerA).approve(dogeForGoat.address, initialAmountLD)
+        await dogeForGoat.deposit(initialAmountLD)
 
         // Executing the send operation from myOFTA contract
-        await expect(
-            dogeForGoat.bridge(sendParam, [nativeFee, 0], ownerA.address, { value: nativeFee })
-        ).to.be.revertedWith('TimeNotReached')
-        await time.increase(200)
-        await dogeForGoat.bridge(sendParam, [nativeFee, 0], ownerA.address, { value: nativeFee })
+        await dogeForGoat.send(sendParam, [nativeFee, 0], ownerA.address, { value: nativeFee })
 
         // Fetching the final token balances of ownerA and ownerB
-        const finalBalanceA = await dogecoin.balanceOf(ownerA.address)
-        const finalBalanceAdapter = await dogecoin.balanceOf(dogeForGoat.address)
+        const finalBalanceA = await dogeForGoat.balanceOf(ownerA.address)
         const finalBalanceB = await goatOFT.balanceOf(ownerB.address)
+        const finalBalanceOFT = await dogecoin.balanceOf(dogeForGoat.address)
+        let finalBalanceDoge = await dogecoin.balanceOf(ownerA.address)
 
         // Asserting that the final balances are as expected after the send operation
-        expect(finalBalanceA).eql(initialAmountLD.sub(tokensToSendLD))
-        expect(finalBalanceAdapter).eql(tokensToSendLD)
+        expect(finalBalanceA).eql(tokensToSendSD)
         expect(finalBalanceB).eql(tokensToSendSD)
-    })
+        expect(finalBalanceOFT).eql(initialAmountLD)
+        expect(finalBalanceDoge).eql(BigNumber.from(0))
 
-    it('test successfully lock/unlock', async function () {
-        // Minting an initial amount of tokens to ownerA's address in the myOFTA contract
-        const initialAmount = ethers.utils.parseUnits('100', 8)
-        await dogecoin.mint(ownerA.address, initialAmount)
+        await dogeForGoat.withdraw(finalBalanceA)
 
-        // Defining the amount of tokens to send and constructing the parameters for the send operation
-        const tokensToSend = ethers.utils.parseUnits('50', 8)
-
-        await dogecoin.connect(ownerA).approve(dogeForGoat.address, tokensToSend)
-        await dogeForGoat.connect(ownerA).lock(tokensToSend)
-
-        // Fetching the final token balances of ownerA and ownerB
-        const finalBalanceA = await dogecoin.balanceOf(ownerA.address)
-        const finalBalanceAdapter = await dogecoin.balanceOf(dogeForGoat.address)
-
-        // Asserting that the final balances are as expected after the send operation
-        expect(finalBalanceA).eql(initialAmount.sub(tokensToSend))
-        expect(finalBalanceAdapter).eql(tokensToSend)
-
-        await dogeForGoat.connect(ownerA).unlock(tokensToSend.mul(CONVERSION_MULTIPLIER))
-
-        expect(await dogecoin.balanceOf(ownerA.address)).eql(initialAmount)
-        expect(await dogecoin.balanceOf(dogeForGoat.address)).eql(BigNumber.from(0))
-    })
-
-    it('test lock/unlock revert cases', async function () {
-        // Minting an initial amount of tokens to ownerA's address in the myOFTA contract
-        const maxLimit = ethers.utils.parseUnits('5000000', 8)
-        const tokensToSend = ethers.utils.parseUnits('50', 8)
-        await dogecoin.mint(ownerA.address, maxLimit.mul(3))
-
-        await dogecoin.connect(ownerA).approve(dogeForGoat.address, maxLimit.mul(3))
-        // too small
-        await expect(dogeForGoat.connect(ownerA).lock(tokensToSend.sub(1))).to.be.revertedWith('BelowMin')
-        // too big
-        await expect(dogeForGoat.connect(ownerA).lock(maxLimit.add(1))).to.be.revertedWith('ExceededPersonalMax')
-
-        // over total max
-        for (let i = 0; i < 4; ++i) {
-            const user = await ethers.getImpersonatedSigner(ethers.Wallet.createRandom().address)
-            await ownerB.sendTransaction({
-                to: user.address,
-                value: ethers.utils.parseEther('1.0'), // Sends exactly 1.0 ether
-            })
-            await dogecoin.mint(user.address, maxLimit)
-            await dogecoin.connect(user).approve(dogeForGoat.address, maxLimit)
-            await dogeForGoat.connect(user).lock(ethers.utils.parseUnits('4500000', 8))
-        }
-        await expect(dogeForGoat.connect(ownerA).lock(maxLimit)).to.be.revertedWith('ExceededTotalMax')
-        // success lock
-        await dogeForGoat.connect(ownerA).lock(tokensToSend)
-
-        await expect(
-            dogeForGoat.connect(ownerA).unlock(tokensToSend.mul(CONVERSION_MULTIPLIER * 2))
-        ).to.be.revertedWith('ExceededBalance')
-    })
-
-    it('test owner functions', async function () {
-        const initialAmount = ethers.utils.parseUnits('100', 8)
-        await dogecoin.mint(ownerA.address, initialAmount)
-
-        // Defining the amount of tokens to send and constructing the parameters for the send operation
-        const tokensToSend = ethers.utils.parseUnits('50', 8)
-
-        await dogecoin.connect(ownerA).approve(dogeForGoat.address, tokensToSend)
-        await dogeForGoat.connect(ownerA).lock(tokensToSend)
-
-        // setMax()
-        await expect(dogeForGoat.setMax(tokensToSend.mul(CONVERSION_MULTIPLIER).sub(1))).to.be.revertedWith(
-            'InvalidAmount'
-        )
-        await dogeForGoat.setMax(tokensToSend.mul(CONVERSION_MULTIPLIER))
-
-        // setPersonalLimit()
-        await expect(dogeForGoat.setPersonalLimit(ONE_UNIT, ONE_UNIT.mul(2))).to.be.revertedWith('InvalidAmount')
-        await dogeForGoat.setPersonalLimit(ONE_UNIT.mul(2), ONE_UNIT)
+        finalBalanceDoge = await dogecoin.balanceOf(ownerA.address)
+        expect(finalBalanceDoge).eql(initialAmountLD.sub(tokensToSendLD))
     })
 })
