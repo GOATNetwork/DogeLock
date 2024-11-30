@@ -44,17 +44,13 @@ contract DogeForGoatUpgradeable is OFTUpgradeable {
         return bytes32(uint256(uint160(_addr)));
     }
 
-    function decimals() public pure override returns (uint8) {
-        return 18;
-    }
-
     /**
      * @dev Allow a user to deposit underlying tokens and mint the corresponding number of wrapped tokens.
      */
     function depositFor(address _account, uint256 _value) public {
         require(_account != address(this), ERC20InvalidReceiver(_account));
         dogeCoin.safeTransferFrom(msg.sender, address(this), _value);
-        _mint(msg.sender, _value * CONVERSION_MULTIPLIER);
+        _mint(_account, _value * CONVERSION_MULTIPLIER);
     }
 
     /**
@@ -63,31 +59,37 @@ contract DogeForGoatUpgradeable is OFTUpgradeable {
     function withdrawTo(address _account, uint256 _value) public {
         require(_account != address(this), ERC20InvalidReceiver(_account));
         _burn(msg.sender, _value);
-        dogeCoin.safeTransfer(msg.sender, _value / CONVERSION_MULTIPLIER);
+        dogeCoin.safeTransfer(_account, _value / CONVERSION_MULTIPLIER);
     }
 
     /**
-     * @dev Warning: the deposit amount is calculated using amountLD divided by the conversion rate
+     * @dev Combination of the depositFor() and send() functions
+     * @param _sendParam The parameters for the send operation.
+     * @param _fee The calculated fee for the send() operation.
+     *      - nativeFee: The native fee.
+     *      - lzTokenFee: The lzToken fee.
+     * @param _refundAddress The address to receive any excess funds.
+     * @return msgReceipt The receipt for the send operation.
+     * @return oftReceipt The OFT receipt information.
+     *
+     * @dev Note: approve is required
      */
     function depositAndSend(
         SendParam calldata _sendParam,
         MessagingFee calldata _fee,
         address _refundAddress
     ) public payable returns (MessagingReceipt memory msgReceipt, OFTReceipt memory oftReceipt) {
-        require(
-            _sendParam.amountLD == (_sendParam.amountLD / CONVERSION_MULTIPLIER) * CONVERSION_MULTIPLIER,
-            "Invalid amount"
-        );
-        depositFor(msg.sender, _sendParam.amountLD / CONVERSION_MULTIPLIER);
-        // @dev Applies the token transfers regarding this send() operation.
+        // @dev get the amount after removeDust()
         // - amountSentLD is the amount in local decimals that was ACTUALLY sent/debited from the sender.
         // - amountReceivedLD is the amount in local decimals that will be received/credited to the recipient on the remote OFT instance.
-        (uint256 amountSentLD, uint256 amountReceivedLD) = _debit(
-            msg.sender,
+        (uint256 amountSentLD, uint256 amountReceivedLD) = _debitView(
             _sendParam.amountLD,
             _sendParam.minAmountLD,
             _sendParam.dstEid
         );
+        // @dev check if there is precision lost during conversion, prevents extra mint on the destination chain
+        require(amountSentLD == (_amountSentLD / CONVERSION_MULTIPLIER) * CONVERSION_MULTIPLIER, "Precision lost");
+        dogeCoin.safeTransferFrom(msg.sender, address(this), amountSentLD / CONVERSION_MULTIPLIER);
 
         // @dev Builds the options and OFT message to quote in the endpoint.
         (bytes memory message, bytes memory options) = _buildMsgAndOptions(_sendParam, amountReceivedLD);
