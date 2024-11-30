@@ -88,3 +88,19 @@ More information about available CLI arguments can be found using the `--help` f
 ```bash
 npx hardhat lz:deploy --help
 ```
+
+## Deployed Contracts
+
+### Sepolia (source chain)
+
+| Contract | Address                                    |
+| -------- | ------------------------------------------ |
+| Dogecoin | 0x6847D8C9DB2bC2a0086Cb4Ba067e7f1112ADb6E9 |
+| Lock     | 0xF156860BCb65Fe5e49955d83Ff6880f799E38084 |
+| OFT      | 0x159320C22cA561282427d0b65C0FE28Bbb3498DC |
+
+### BSC Testnet (destination chain)
+
+| Contract | Address                                    |
+| -------- | ------------------------------------------ |
+| OFT      | 0x218ab55484482409aAfD035066eb1e0315BE0084 |

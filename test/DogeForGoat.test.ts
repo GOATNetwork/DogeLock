@@ -63,7 +63,7 @@ describe('Doge For Goat OFT Test', function () {
         mockEndpointV2A = await EndpointV2Mock.deploy(eidA)
         mockEndpointV2B = await EndpointV2Mock.deploy(eidB)
 
-        dogecoin = await DogecoinMock.deploy('Dogecoin', 'DOG')
+        dogecoin = await DogecoinMock.deploy()
 
         // Deploying two instances of GoatOFT contract with different identifiers and linking them to the mock LZEndpoint
         dogeForGoat = await DogeForGoat.deploy(dogecoin.address, mockEndpointV2A.address)

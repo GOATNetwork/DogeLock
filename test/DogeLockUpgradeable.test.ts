@@ -17,7 +17,7 @@ describe('Doge Lock Test', function () {
     const eidB = 2
     // Declaration of variables to be used in the test suite
     let DogeLock: ContractFactory
-    let ERC20Mock: ContractFactory
+    let DogecoinMock: ContractFactory
     let ownerA: SignerWithAddress
     let ownerB: SignerWithAddress
 
@@ -29,7 +29,7 @@ describe('Doge Lock Test', function () {
         // Contract factory for our tested contract
         DogeLock = await ethers.getContractFactory('DogeLockUpgradeable')
 
-        ERC20Mock = await ethers.getContractFactory('DogecoinMock')
+        DogecoinMock = await ethers.getContractFactory('DogecoinMock')
 
         // Fetching the first three signers (accounts) from Hardhat's local Ethereum network
         const signers = await ethers.getSigners()
@@ -39,7 +39,7 @@ describe('Doge Lock Test', function () {
 
     // beforeEach hook for setup that runs before each test in the block
     beforeEach(async function () {
-        dogecoin = await ERC20Mock.deploy('Dogecoin', 'DOG')
+        dogecoin = await DogecoinMock.deploy()
 
         dogeLock = await DogeLock.deploy(dogecoin.address)
         await dogeLock.initialize(ownerA.address)

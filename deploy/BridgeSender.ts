@@ -1,30 +1,30 @@
 import { BigNumber } from 'ethers'
-import { ethers } from 'hardhat'
+import { ethers, network } from 'hardhat'
 import { Options } from '@layerzerolabs/lz-v2-utilities'
 
 async function main() {
     const [deployer] = await ethers.getSigners()
     const deployerAddr = await deployer.getAddress()
-    console.log('deployerAddr :', deployerAddr)
+    console.log('network', network.name, (await ethers.provider.getNetwork()).chainId)
+    console.log('deployerAddr :', deployerAddr, ' Balance: ', await ethers.provider.getBalance(deployerAddr))
 
-    const ERC20Mock = await ethers.getContractFactory('GoatOFT')
-    const oft = await ERC20Mock.attach('0x43F32DE55FbD9D9771b0A5d650f4Fa64ad022E96')
+    const OFT = await ethers.getContractFactory('DogeForGoatUpgradeable')
+    const oft = await OFT.attach('0x218ab55484482409aAfD035066eb1e0315BE0084')
 
     const options = Options.newOptions().addExecutorLzReceiveOption(200000, 0).toHex().toString()
-    const sendParam = [
-        40292,
+    let sendParam = [
+        40161,
         ethers.utils.zeroPad(deployerAddr, 32),
-        ethers.utils.parseUnits('3', 18),
-        ethers.utils.parseUnits('3', 18),
-        // BigNumber.from(0),
+        BigNumber.from('50000000000000000000'),
+        BigNumber.from('50000000000000000000'),
         options,
         '0x',
         '0x',
     ]
     const [fee] = await oft.quoteSend(sendParam, false)
+    console.log(fee)
 
     let tx = await oft.send(sendParam, [fee, 0], deployerAddr, { value: fee })
-
     console.log(tx)
 }
 
