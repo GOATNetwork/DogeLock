@@ -8,11 +8,11 @@ async function main() {
     console.log('deployerAddr :', deployerAddr)
 
     const ERC20Mock = await ethers.getContractFactory('GoatOFT')
-    const oft = await ERC20Mock.attach('0x920F5eB90efc66f8E9E01C1C3F4F0237062447E2')
+    const oft = await ERC20Mock.attach('0x43F32DE55FbD9D9771b0A5d650f4Fa64ad022E96')
 
     const options = Options.newOptions().addExecutorLzReceiveOption(200000, 0).toHex().toString()
     const sendParam = [
-        40161,
+        40292,
         ethers.utils.zeroPad(deployerAddr, 32),
         ethers.utils.parseUnits('3', 18),
         ethers.utils.parseUnits('3', 18),

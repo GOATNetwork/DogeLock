@@ -41,7 +41,7 @@ describe('Doge Lock Test', function () {
     beforeEach(async function () {
         dogecoin = await ERC20Mock.deploy('Dogecoin', 'DOG')
 
-        dogeLock = await DogeLock.deploy(dogecoin.address, (await ethers.provider.getBlock('latest')).timestamp + 100)
+        dogeLock = await DogeLock.deploy(dogecoin.address)
         await dogeLock.initialize(ownerA.address)
     })
 

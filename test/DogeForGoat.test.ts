@@ -9,7 +9,7 @@ import { Options } from '@layerzerolabs/lz-v2-utilities'
 
 use(solidity)
 
-describe('Doge Lock Test', function () {
+describe('Doge For Goat OFT Test', function () {
     const ONE_UNIT = ethers.utils.parseEther('1')
 
     // Constant representing a mock Endpoint ID for testing purposes
@@ -80,13 +80,13 @@ describe('Doge Lock Test', function () {
     })
 
     // A test case to verify token transfer functionality
-    it('should send a token from A address to B address via OFTAdapter/OFT', async function () {
+    it('should send a token from A address to B address via OFT', async function () {
         // Minting an initial amount of tokens to ownerA's address in the myOFTA contract
         const initialAmountLD = ethers.utils.parseUnits('100', 8)
         await dogecoin.mint(ownerA.address, initialAmountLD)
 
         // Defining the amount of tokens to send and constructing the parameters for the send operation
-        const tokensToSendLD = ethers.utils.parseUnits('50', 8)
+        const tokensToSendLD = ethers.utils.parseUnits('60', 8)
         const tokensToSendSD = tokensToSendLD.mul(CONVERSION_MULTIPLIER)
 
         // Defining extra message execution options for the send operation
@@ -94,7 +94,6 @@ describe('Doge Lock Test', function () {
 
         const sendParam = [
             eidB,
-            // ethers.utils.zeroPad(ownerB.address, 32),
             await dogeForGoat.addressToBytes32(ownerB.address),
             tokensToSendSD,
             tokensToSendSD,
@@ -109,7 +108,7 @@ describe('Doge Lock Test', function () {
 
         // Approving the native fee to be spent by the myOFTA contract
         await dogecoin.connect(ownerA).approve(dogeForGoat.address, initialAmountLD)
-        await dogeForGoat.deposit(initialAmountLD)
+        await dogeForGoat.depositFor(ownerA.address, initialAmountLD)
 
         // Executing the send operation from myOFTA contract
         await dogeForGoat.send(sendParam, [nativeFee, 0], ownerA.address, { value: nativeFee })
@@ -121,14 +120,110 @@ describe('Doge Lock Test', function () {
         let finalBalanceDoge = await dogecoin.balanceOf(ownerA.address)
 
         // Asserting that the final balances are as expected after the send operation
-        expect(finalBalanceA).eql(tokensToSendSD)
+        expect(finalBalanceA).eql(initialAmountLD.sub(tokensToSendLD).mul(CONVERSION_MULTIPLIER))
         expect(finalBalanceB).eql(tokensToSendSD)
         expect(finalBalanceOFT).eql(initialAmountLD)
         expect(finalBalanceDoge).eql(BigNumber.from(0))
 
-        await dogeForGoat.withdraw(finalBalanceA)
+        await dogeForGoat.withdrawTo(ownerA.address, finalBalanceA)
 
         finalBalanceDoge = await dogecoin.balanceOf(ownerA.address)
+        expect(finalBalanceDoge).eql(initialAmountLD.sub(tokensToSendLD))
+    })
+
+    // A test case to verify token transfer functionality
+    it('should send token through depositAndSend()', async function () {
+        // Minting an initial amount of tokens to ownerA's address in the myOFTA contract
+        const initialAmountLD = ethers.utils.parseUnits('100', 8)
+        await dogecoin.mint(ownerA.address, initialAmountLD)
+
+        // Defining the amount of tokens to send and constructing the parameters for the send operation
+        const tokensToSendLD = ethers.utils.parseUnits('60', 8)
+        const tokensToSendSD = tokensToSendLD.mul(CONVERSION_MULTIPLIER)
+
+        // Defining extra message execution options for the send operation
+        const options = Options.newOptions().addExecutorLzReceiveOption(200000, 0).toHex().toString()
+
+        const sendParam = [
+            eidB,
+            ethers.utils.zeroPad(ownerB.address, 32),
+            tokensToSendSD,
+            tokensToSendSD,
+            // BigNumber.from(0),
+            options,
+            '0x',
+            '0x',
+        ]
+
+        // Fetching the native fee for the token send operation
+        const [nativeFee] = await dogeForGoat.quoteSend(sendParam, false)
+
+        // Approving the native fee to be spent by the myOFTA contract
+        await dogecoin.connect(ownerA).approve(dogeForGoat.address, initialAmountLD)
+        await dogeForGoat
+            .connect(ownerA)
+            .depositAndSend(sendParam, [nativeFee, 0], ownerA.address, { value: nativeFee })
+
+        // Fetching the final token balances of ownerA and ownerB
+        const finalBalanceA = await dogeForGoat.balanceOf(ownerA.address)
+        const finalBalanceB = await goatOFT.balanceOf(ownerB.address)
+        const finalBalanceOFT = await dogecoin.balanceOf(dogeForGoat.address)
+        const finalBalanceDoge = await dogecoin.balanceOf(ownerA.address)
+
+        // Asserting that the final balances are as expected after the send operation
+        expect(finalBalanceA).eql(BigNumber.from(0))
+        expect(finalBalanceB).eql(tokensToSendSD)
+        expect(finalBalanceOFT).eql(tokensToSendLD)
+        expect(finalBalanceDoge).eql(initialAmountLD.sub(tokensToSendLD))
+    })
+
+    // A test case to verify token transfer functionality
+    it('should send locked token from DogeLock', async function () {
+        const DogeLock = await ethers.getContractFactory('DogeLockUpgradeable')
+        const dogeLock = await DogeLock.deploy(dogecoin.address)
+        await dogeLock.initialize(ownerA.address)
+        // Minting an initial amount of tokens to ownerA's address in the myOFTA contract
+        const initialAmountLD = ethers.utils.parseUnits('100', 8)
+        await dogecoin.mint(ownerA.address, initialAmountLD)
+
+        // Defining the amount of tokens to send and constructing the parameters for the send operation
+        const tokensToSendLD = ethers.utils.parseUnits('60', 8)
+        const tokensToSendSD = tokensToSendLD.mul(CONVERSION_MULTIPLIER)
+
+        // Defining extra message execution options for the send operation
+        const options = Options.newOptions().addExecutorLzReceiveOption(200000, 0).toHex().toString()
+
+        const sendParam = [
+            eidB,
+            ethers.utils.zeroPad(ownerB.address, 32),
+            tokensToSendSD,
+            tokensToSendSD,
+            // BigNumber.from(0),
+            options,
+            '0x',
+            '0x',
+        ]
+
+        // Fetching the native fee for the token send operation
+        const [nativeFee] = await dogeForGoat.quoteSend(sendParam, false)
+
+        // Approving the native fee to be spent by the myOFTA contract
+        await dogecoin.connect(ownerA).approve(dogeLock.address, tokensToSendLD)
+        await dogeLock.connect(ownerA).lock(tokensToSendLD)
+        await dogeLock
+            .connect(ownerA)
+            .bridge(dogeForGoat.address, tokensToSendLD, sendParam, [nativeFee, 0], { value: nativeFee })
+
+        // Fetching the final token balances of ownerA and ownerB
+        const finalBalanceA = await dogeForGoat.balanceOf(ownerA.address)
+        const finalBalanceB = await goatOFT.balanceOf(ownerB.address)
+        const finalBalanceOFT = await dogecoin.balanceOf(dogeForGoat.address)
+        const finalBalanceDoge = await dogecoin.balanceOf(ownerA.address)
+
+        // Asserting that the final balances are as expected after the send operation
+        expect(finalBalanceA).eql(BigNumber.from(0))
+        expect(finalBalanceB).eql(tokensToSendSD)
+        expect(finalBalanceOFT).eql(tokensToSendLD)
         expect(finalBalanceDoge).eql(initialAmountLD.sub(tokensToSendLD))
     })
 
@@ -137,7 +232,7 @@ describe('Doge Lock Test', function () {
         await dogecoin.mint(ownerA.address, initialAmount)
 
         await dogecoin.approve(dogeForGoat.address, initialAmount)
-        await dogeForGoat.deposit(initialAmount)
+        await dogeForGoat.depositFor(ownerA.address, initialAmount)
         let dogeBalance = await dogecoin.balanceOf(ownerA.address)
         let dfgDogeBalance = await dogecoin.balanceOf(dogeForGoat.address)
         let totalSupply = await dogeForGoat.totalSupply()
@@ -145,7 +240,7 @@ describe('Doge Lock Test', function () {
         expect(dfgDogeBalance).eql(initialAmount)
         expect(totalSupply).eql(initialAmount.mul(CONVERSION_MULTIPLIER))
 
-        await dogeForGoat.withdraw(totalSupply.sub(1))
+        await dogeForGoat.withdrawTo(ownerA.address, totalSupply.sub(1))
         dogeBalance = await dogecoin.balanceOf(ownerA.address)
         dfgDogeBalance = await dogecoin.balanceOf(dogeForGoat.address)
         totalSupply = await dogeForGoat.totalSupply()
@@ -154,7 +249,7 @@ describe('Doge Lock Test', function () {
         expect(totalSupply).eql(BigNumber.from(1))
 
         await dogecoin.approve(dogeForGoat.address, initialAmount)
-        await dogeForGoat.deposit(initialAmount.sub(1))
+        await dogeForGoat.depositFor(ownerA.address, initialAmount.sub(1))
         dogeBalance = await dogecoin.balanceOf(ownerA.address)
         dfgDogeBalance = await dogecoin.balanceOf(dogeForGoat.address)
         totalSupply = await dogeForGoat.totalSupply()

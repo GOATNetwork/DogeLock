@@ -15,7 +15,7 @@ async function main() {
     const EndpointV2Mock = await ethers.getContractFactory('EndpointV2Mock')
     const ERC20Mock = await ethers.getContractFactory('DogecoinMock')
     const DogeLock = await ethers.getContractFactory('DogeLockUpgradeable')
-    const MyOFTAdapter = await ethers.getContractFactory('MyOFTAdapter')
+    const MyOFT = await ethers.getContractFactory('MyOFTMock')
 
     // chain A:
     const tokenA = await ERC20Mock.deploy('Token', 'TOKEN')
@@ -25,7 +25,7 @@ async function main() {
     // chain B:
     const tokenB = await ERC20Mock.deploy('Token', 'TOKEN')
     const mockEndpointV2B = await EndpointV2Mock.deploy(eidB)
-    const myOFTAdapter = await MyOFTAdapter.deploy(tokenB.address, mockEndpointV2A.address, deployerAddr)
+    const myOFTAdapter = await MyOFT.deploy(tokenB.address, mockEndpointV2A.address, deployerAddr)
 
     // @dev Test Only: Setting destination endpoints in the LZEndpoint mock for each MyOFT instance
     await mockEndpointV2A.setDestLzEndpoint(myOFTAdapter.address, mockEndpointV2B.address)

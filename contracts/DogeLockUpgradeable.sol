@@ -3,7 +3,9 @@ pragma solidity ^0.8.27;
 
 import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { SafeERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { SendParam, MessagingFee } from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
 import { IDogeLock } from "./interfaces/IDogeLock.sol";
+import { IDogeForGoat } from "./interfaces/IDogeForGoat.sol";
 
 /**
  * @dev Locking and bridging contract for Dogecoin.
@@ -12,7 +14,6 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable dogeCoin;
-    uint256 public immutable bridgeTime;
 
     uint256 constant DECIMAL = 100_000_000;
 
@@ -26,10 +27,8 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
     /**
      * @dev Constructor for the DogeLockUpgradeable contract.
      * @param _dogeCoin The address of the Dogecoin token.
-     * @param _bridgeTime Time the users can bridge their tokens to Goat Network
      */
-    constructor(address _dogeCoin, uint256 _bridgeTime) {
-        bridgeTime = _bridgeTime;
+    constructor(address _dogeCoin) {
         dogeCoin = IERC20(_dogeCoin);
     }
 
@@ -92,5 +91,17 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
         totalBalance -= _amount;
         dogeCoin.safeTransfer(msg.sender, _amount);
         emit Unlock(msg.sender, _amount, block.number);
+    }
+
+    function bridge(
+        address _oft,
+        uint256 _amount,
+        SendParam calldata _sendParam,
+        MessagingFee calldata _fee
+    ) external payable {
+        balances[msg.sender] -= _amount;
+        totalBalance -= _amount;
+        dogeCoin.approve(_oft, _amount);
+        IDogeForGoat(_oft).depositAndSend{ value: msg.value }(_sendParam, _fee, msg.sender);
     }
 }
