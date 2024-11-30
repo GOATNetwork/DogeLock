@@ -141,3 +141,59 @@ task('user-bridge', 'Bridge tokens on testnet')
             console.error('Error during bridge operation:', error)
         }
     })
+
+// 添加新的任务用于设置全局最大限额
+task('set-max-limit', 'Set max total lock limit')
+    .addParam('amount', 'Amount of max total lock limit in DOGE')
+    .setAction(async ({ amount }, hre) => {
+        const { ethers, network } = hre
+
+        if (network.name !== 'testnet') {
+            console.error('This task is only for testnet network')
+            return
+        }
+
+        const [signer] = await ethers.getSigners()
+        console.log('Setting max limit with address:', await signer.getAddress())
+
+        const { dogeLock } = await getContracts(network, hre)
+        const amountWithDecimals = utils.parseUnits(amount, 8)
+
+        console.log(`\nSetting max total lock limit to ${amount} DOGE...`)
+        await dogeLock.setMax(amountWithDecimals, {
+            gasLimit: 500000,
+        })
+
+        console.log('Max limit set successfully!')
+    })
+
+// 添加新的任务用于设置个人限额
+task('set-personal-limits', 'Set personal min/max lock limits')
+    .addParam('max', 'Max amount in DOGE for personal lock limit')
+    .addParam('min', 'Min amount in DOGE for personal lock limit')
+    .setAction(async ({ max, min }, hre) => {
+        const { ethers, network } = hre
+
+        if (network.name !== 'testnet') {
+            console.error('This task is only for testnet network')
+            return
+        }
+
+        const [signer] = await ethers.getSigners()
+        console.log('Setting personal limits with address:', await signer.getAddress())
+
+        const { dogeLock } = await getContracts(network, hre)
+
+        const maxAmount = utils.parseUnits(max, 8)
+        const minAmount = utils.parseUnits(min, 8)
+
+        console.log(`\nSetting personal limits...`)
+        console.log(`Max: ${max} DOGE`)
+        console.log(`Min: ${min} DOGE`)
+
+        await dogeLock.setPersonalLimit(maxAmount, minAmount, {
+            gasLimit: 500000,
+        })
+
+        console.log('Personal limits set successfully!')
+    })
