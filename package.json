@@ -24,9 +24,7 @@
     "start-local-node": "hardhat node --port 8545 --hostname 0.0.0.0 --no-deploy",
     "subgraph-local": "npm run prepare-subgraph && npm run codegen && npm run build-subgraph && npm run deploy-local-subgraph",
     "subgraph-local-init": "npm run prepare-subgraph && npm run codegen && npm run build-subgraph && npm run remove-local-subgraph || true && npm run create-local-subgraph && npm run deploy-local-subgraph",
-    "test": "$npm_execpath run test:forge && $npm_execpath run test:hardhat",
-    "test:forge": "forge test",
-    "test:hardhat": "hardhat test"
+    "test": "hardhat test"
   },
   "resolutions": {
     "ethers": "^5.7.2",

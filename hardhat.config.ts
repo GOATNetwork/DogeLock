@@ -18,6 +18,8 @@ import './type-extensions'
 
 import '@typechain/hardhat'
 import './tasks/create-test-data'
+import './tasks/bridge-helper'
+import './tasks/contract-deployer'
 
 // Set your preferred authentication method
 //
