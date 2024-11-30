@@ -18,6 +18,8 @@ import './type-extensions'
 
 import '@typechain/hardhat'
 import './tasks/create-test-data'
+import './tasks/bridge-helper'
+import './tasks/contract-deployer'
 
 // Set your preferred authentication method
 //
@@ -66,6 +68,11 @@ const config: HardhatUserConfig = {
                 tokenAddress: '0x0', // Set the token address for the OFT adapter
             },
         },
+        'metis-testnet': {
+            eid: EndpointId.METISSEP_V2_TESTNET,
+            url: 'https://sepolia.metisdevops.link',
+            accounts,
+        },
         'avalanche-testnet': {
             eid: EndpointId.AVALANCHE_V2_TESTNET,
             url: process.env.RPC_URL_FUJI || 'https://rpc.ankr.com/avalanche_fuji',
@@ -74,6 +81,11 @@ const config: HardhatUserConfig = {
         'amoy-testnet': {
             eid: EndpointId.AMOY_V2_TESTNET,
             url: process.env.RPC_URL_AMOY || 'https://polygon-amoy-bor-rpc.publicnode.com',
+            accounts,
+        },
+        'bsc-testnet': {
+            eid: EndpointId.BSC_V2_TESTNET,
+            url: process.env.RPC_URL_BSC_TESTNET || 'https://polygon-amoy-bor-rpc.publicnode.com',
             accounts,
         },
         hardhat: {

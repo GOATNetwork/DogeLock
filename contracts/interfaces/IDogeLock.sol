@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import { SendParam, OFTReceipt, MessagingReceipt, MessagingFee } from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
-
 interface IDogeLock {
     // Events
     event Lock(address user, uint256 amount, uint256 blockNumber);
@@ -10,18 +8,11 @@ interface IDogeLock {
 
     // Custom errors
     error InvalidAmount();
-    error ExceededBalance();
-    error ExceededPersonalMax();
-    error ExceededTotalMax();
+    error ExceededBalance(uint256);
+    error ExceededPersonalMax(uint256);
+    error ExceededTotalMax(uint256);
     error BelowMin();
     error TimeNotReached();
-
-    /**
-     * @dev Helper function to convert address to Bytes32 for peer setup
-     * @param _addr The address needed to be converted
-     * @return The converted address
-     */
-    function addressToBytes32(address _addr) external pure returns (bytes32);
 
     /**
      * @dev Owner function to set the max total locking amount of Dogecoin
@@ -51,21 +42,4 @@ interface IDogeLock {
      * @dev The amount and unlock time is recorded for points calculation on Goat Network
      */
     function unlock(uint256 _amount) external;
-
-    /**
-     * @dev Bridge user's Dogecoin onto Goat Network
-     * @param _sendParam The bridging operation paramters
-     * @param _fee The calculated fee for the bridge() operation.
-     *      - nativeFee: The native fee.
-     *      - lzTokenFee: The lzToken fee.
-     * @param _refundAddress The address to receive any excess funds.
-     * @return msgReceipt The receipt for the send operation.
-     * @return oftReceipt The OFT receipt information.
-     * @dev The amount and unlock time is recorded for points calculation on Goat Network
-     */
-    function bridge(
-        SendParam calldata _sendParam,
-        MessagingFee calldata _fee,
-        address _refundAddress
-    ) external payable returns (MessagingReceipt memory msgReceipt, OFTReceipt memory oftReceipt);
 }

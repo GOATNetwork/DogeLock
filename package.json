@@ -14,6 +14,7 @@
     "create-local-subgraph": "cd subgraph && graph create --node http://localhost:8020 goat-dogelock",
     "deploy-contracts": "hardhat run deploy/DogeLockTestDeploy.ts --network localhost",
     "deploy-local-subgraph": "cd subgraph && graph deploy --node http://localhost:8020 --ipfs http://localhost:5001 goat-dogelock",
+    "deploy:sepolia": "hardhat deployOFT --chain source --endpoint 0x6EDCE65403992e310A62460808c4b910D972f10f --dogecoin 0x6847D8C9DB2bC2a0086Cb4Ba067e7f1112ADb6E9 --network sepolia-testnet",
     "lint": "$npm_execpath run lint:js && $npm_execpath run lint:sol",
     "lint:fix": "eslint --fix '**/*.{js,ts,json}' && prettier --write . && solhint 'contracts/**/*.sol' --fix --noPrompt",
     "lint:js": "eslint '**/*.{js,ts,json}' && prettier --check .",
@@ -24,9 +25,7 @@
     "start-local-node": "hardhat node --port 8545 --hostname 0.0.0.0 --no-deploy",
     "subgraph-local": "npm run prepare-subgraph && npm run codegen && npm run build-subgraph && npm run deploy-local-subgraph",
     "subgraph-local-init": "npm run prepare-subgraph && npm run codegen && npm run build-subgraph && npm run remove-local-subgraph || true && npm run create-local-subgraph && npm run deploy-local-subgraph",
-    "test": "$npm_execpath run test:forge && $npm_execpath run test:hardhat",
-    "test:forge": "forge test",
-    "test:hardhat": "hardhat test"
+    "test": "hardhat test"
   },
   "resolutions": {
     "ethers": "^5.7.2",

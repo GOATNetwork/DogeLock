@@ -209,7 +209,7 @@ contract EndpointV2Mock is ILayerZeroEndpointV2, MessagingContext {
         MessagingParams calldata _params,
         address /*_sender*/
     ) internal view returns (MessagingFee memory messagingFee) {
-        (bytes memory executorOptions, bytes memory dvnOptions) = UlnOptions.decode(_params.options);
+        (bytes memory executorOptions, ) = UlnOptions.decode(_params.options);
 
         // 2) get Executor fee
         uint256 executorFee = this.getExecutorFee(_params.message.length, executorOptions);
@@ -671,11 +671,7 @@ contract EndpointV2Mock is ILayerZeroEndpointV2, MessagingContext {
     /// @dev called when the endpoint checks if the msgLib attempting to verify the msg is the configured msgLib of the Oapp
     /// @dev this check provides the ability for Oapp to lock in a trusted msgLib
     /// @dev it will fist check if the msgLib is the currently configured one. then check if the msgLib is the one in grace period of msgLib versioning upgrade
-    function isValidReceiveLibrary(
-        address _receiver,
-        uint32 _srcEid,
-        address _actualReceiveLib
-    ) public view returns (bool) {
+    function isValidReceiveLibrary(address, uint32, address) public pure returns (bool) {
         return true;
     }
 }

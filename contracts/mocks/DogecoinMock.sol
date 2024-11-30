@@ -5,7 +5,7 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 // @dev WARNING: This is for testing purposes only
 contract DogecoinMock is ERC20 {
-    constructor(string memory _name, string memory _symbol) ERC20(_name, _symbol) {}
+    constructor() ERC20("Dogecoin Mock", "DM") {}
 
     function mint(address _to, uint256 _amount) public {
         _mint(_to, _amount);
