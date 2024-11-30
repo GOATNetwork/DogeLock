@@ -99,14 +99,4 @@ contract DogeForGoatUpgradeable is OFTUpgradeable {
 
         emit OFTSent(msgReceipt.guid, _sendParam.dstEid, msg.sender, amountSentLD, amountReceivedLD);
     }
-
-    /**
-     * @dev Mint wrapped token to cover any dogecoin that would have been transferred by mistake or acquired from
-     * rebasing mechanisms.
-     */
-    function recover(address _account) public onlyOwner returns (uint256) {
-        uint256 value = dogeCoin.balanceOf(address(this)) * CONVERSION_MULTIPLIER - totalSupply();
-        _mint(_account, value);
-        return value;
-    }
 }

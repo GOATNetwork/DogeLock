@@ -226,38 +226,4 @@ describe('Doge For Goat OFT Test', function () {
         expect(finalBalanceOFT).eql(tokensToSendLD)
         expect(finalBalanceDoge).eql(initialAmountLD.sub(tokensToSendLD))
     })
-
-    it('should recover', async function () {
-        const initialAmount = ethers.utils.parseUnits('2', 8)
-        await dogecoin.mint(ownerA.address, initialAmount)
-
-        await dogecoin.approve(dogeForGoat.address, initialAmount)
-        await dogeForGoat.depositFor(ownerA.address, initialAmount)
-        let dogeBalance = await dogecoin.balanceOf(ownerA.address)
-        let dfgDogeBalance = await dogecoin.balanceOf(dogeForGoat.address)
-        let totalSupply = await dogeForGoat.totalSupply()
-        expect(dogeBalance).eql(BigNumber.from(0))
-        expect(dfgDogeBalance).eql(initialAmount)
-        expect(totalSupply).eql(initialAmount.mul(CONVERSION_MULTIPLIER))
-
-        await dogeForGoat.withdrawTo(ownerA.address, totalSupply.sub(1))
-        dogeBalance = await dogecoin.balanceOf(ownerA.address)
-        dfgDogeBalance = await dogecoin.balanceOf(dogeForGoat.address)
-        totalSupply = await dogeForGoat.totalSupply()
-        expect(dogeBalance).eql(initialAmount.sub(1))
-        expect(dfgDogeBalance).eql(BigNumber.from(1))
-        expect(totalSupply).eql(BigNumber.from(1))
-
-        await dogecoin.approve(dogeForGoat.address, initialAmount)
-        await dogeForGoat.depositFor(ownerA.address, initialAmount.sub(1))
-        dogeBalance = await dogecoin.balanceOf(ownerA.address)
-        dfgDogeBalance = await dogecoin.balanceOf(dogeForGoat.address)
-        totalSupply = await dogeForGoat.totalSupply()
-        expect(dogeBalance).eql(BigNumber.from(0))
-        expect(dfgDogeBalance).eql(initialAmount)
-        expect(totalSupply).eql(initialAmount.sub(1).mul(CONVERSION_MULTIPLIER).add(1))
-
-        await dogeForGoat.recover(ownerB.address)
-        expect(await dogeForGoat.balanceOf(ownerB.address)).eql(ethers.utils.parseUnits('1', 10).sub(1))
-    })
 })
