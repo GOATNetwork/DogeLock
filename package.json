@@ -14,6 +14,7 @@
     "create-local-subgraph": "cd subgraph && graph create --node http://localhost:8020 goat-dogelock",
     "deploy-contracts": "hardhat run deploy/DogeLockTestDeploy.ts --network localhost",
     "deploy-local-subgraph": "cd subgraph && graph deploy --node http://localhost:8020 --ipfs http://localhost:5001 goat-dogelock",
+    "deploy:sepolia": "hardhat deployOFT --chain source --endpoint 0x6EDCE65403992e310A62460808c4b910D972f10f --dogecoin 0x6847D8C9DB2bC2a0086Cb4Ba067e7f1112ADb6E9 --network sepolia-testnet",
     "lint": "$npm_execpath run lint:js && $npm_execpath run lint:sol",
     "lint:fix": "eslint --fix '**/*.{js,ts,json}' && prettier --write . && solhint 'contracts/**/*.sol' --fix --noPrompt",
     "lint:js": "eslint '**/*.{js,ts,json}' && prettier --check .",
