@@ -12,6 +12,10 @@ import { IDogeLock } from "./interfaces/IDogeLock.sol";
 contract DogeForGoatUpgradeable is OFTUpgradeable {
     using SafeERC20 for IERC20;
 
+    event Deposit(address indexed user, uint256 indexed amount, address indexed to);
+    event Withdraw(address indexed user, uint256 indexed amount, address indexed to);
+    event DepositAndBridge(address indexed user, uint256 indexed amount);
+
     IERC20 public immutable dogeCoin;
 
     // Conversion rate from Dogecoin (8 decimals) to Wrapped Dogecoin (18 decimals)
@@ -51,6 +55,7 @@ contract DogeForGoatUpgradeable is OFTUpgradeable {
         require(_account != address(this), ERC20InvalidReceiver(_account));
         dogeCoin.safeTransferFrom(msg.sender, address(this), _value);
         _mint(_account, _value * CONVERSION_MULTIPLIER);
+        emit Deposit(msg.sender, _value, _account);
     }
 
     /**
@@ -60,6 +65,7 @@ contract DogeForGoatUpgradeable is OFTUpgradeable {
         require(_account != address(this), ERC20InvalidReceiver(_account));
         _burn(msg.sender, _value);
         dogeCoin.safeTransfer(_account, _value / CONVERSION_MULTIPLIER);
+        emit Withdraw(msg.sender, _value, _account);
     }
 
     /**
@@ -87,8 +93,6 @@ contract DogeForGoatUpgradeable is OFTUpgradeable {
             _sendParam.minAmountLD,
             _sendParam.dstEid
         );
-        // @dev check if there is precision lost during conversion, prevents extra mint on the destination chain
-        require(amountSentLD == (_amountSentLD / CONVERSION_MULTIPLIER) * CONVERSION_MULTIPLIER, "Precision lost");
         dogeCoin.safeTransferFrom(msg.sender, address(this), amountSentLD / CONVERSION_MULTIPLIER);
 
         // @dev Builds the options and OFT message to quote in the endpoint.
@@ -100,5 +104,6 @@ contract DogeForGoatUpgradeable is OFTUpgradeable {
         oftReceipt = OFTReceipt(amountSentLD, amountReceivedLD);
 
         emit OFTSent(msgReceipt.guid, _sendParam.dstEid, msg.sender, amountSentLD, amountReceivedLD);
+        emit DepositAndBridge(msg.sender, amountSentLD / CONVERSION_MULTIPLIER);
     }
 }

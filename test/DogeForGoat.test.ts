@@ -97,7 +97,6 @@ describe('Doge For Goat OFT Test', function () {
             await dogeForGoat.addressToBytes32(ownerB.address),
             tokensToSendSD,
             tokensToSendSD,
-            // BigNumber.from(0),
             options,
             '0x',
             '0x',
@@ -108,7 +107,10 @@ describe('Doge For Goat OFT Test', function () {
 
         // Approving the native fee to be spent by the myOFTA contract
         await dogecoin.connect(ownerA).approve(dogeForGoat.address, initialAmountLD)
-        await dogeForGoat.depositFor(ownerA.address, initialAmountLD)
+        await expect(dogeForGoat.connect(ownerA).depositFor(dogeForGoat.address, initialAmountLD)).to.be.revertedWith(
+            'ERC20InvalidReceiver'
+        )
+        await dogeForGoat.connect(ownerA).depositFor(ownerA.address, initialAmountLD)
 
         // Executing the send operation from myOFTA contract
         await dogeForGoat.send(sendParam, [nativeFee, 0], ownerA.address, { value: nativeFee })
@@ -125,7 +127,10 @@ describe('Doge For Goat OFT Test', function () {
         expect(finalBalanceOFT).eql(initialAmountLD)
         expect(finalBalanceDoge).eql(BigNumber.from(0))
 
-        await dogeForGoat.withdrawTo(ownerA.address, finalBalanceA)
+        await expect(dogeForGoat.connect(ownerA).withdrawTo(dogeForGoat.address, finalBalanceA)).to.be.revertedWith(
+            'ERC20InvalidReceiver'
+        )
+        await dogeForGoat.connect(ownerA).withdrawTo(ownerA.address, finalBalanceA)
 
         finalBalanceDoge = await dogecoin.balanceOf(ownerA.address)
         expect(finalBalanceDoge).eql(initialAmountLD.sub(tokensToSendLD))
@@ -149,7 +154,6 @@ describe('Doge For Goat OFT Test', function () {
             ethers.utils.zeroPad(ownerB.address, 32),
             tokensToSendSD,
             tokensToSendSD,
-            // BigNumber.from(0),
             options,
             '0x',
             '0x',
@@ -198,7 +202,6 @@ describe('Doge For Goat OFT Test', function () {
             ethers.utils.zeroPad(ownerB.address, 32),
             tokensToSendSD,
             tokensToSendSD,
-            // BigNumber.from(0),
             options,
             '0x',
             '0x',
