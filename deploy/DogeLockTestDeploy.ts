@@ -39,7 +39,7 @@ async function main() {
     await dogeLock.setPeer(eidB, ethers.utils.zeroPad(myOFTAdapter.address, 32), { gasLimit: 500000 })
     await myOFTAdapter.setPeer(eidA, ethers.utils.zeroPad(dogeLock.address, 32), { gasLimit: 500000 })
 
-    await tokenA.mint(deployerAddr, ethers.utils.parseUnits('1000000', 18))
+    await tokenA.mint(deployerAddr, ethers.utils.parseUnits('100000000', 8))
 
     console.log('-----Chain A-----')
     console.log('Mock TokenA:', tokenA.address)
