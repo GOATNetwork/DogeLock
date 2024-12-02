@@ -72,10 +72,10 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
      */
     function lock(uint256 _amount) external {
         require(_amount >= personalMinLockAmount, BelowMin());
-        dogeCoin.safeTransferFrom(msg.sender, address(this), _amount);
         balances[msg.sender] += _amount;
         totalBalance += _amount;
         require(balances[msg.sender] <= personalMaxLockAmount, ExceededPersonalMax(balances[msg.sender]));
+        dogeCoin.safeTransferFrom(msg.sender, address(this), _amount);
         require(totalBalance <= maxLockAmount, ExceededTotalMax(totalBalance));
         emit Lock(msg.sender, _amount, block.number);
     }
@@ -87,6 +87,7 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
      */
     function unlock(uint256 _amount) external {
         require(_amount <= balances[msg.sender], ExceededBalance(balances[msg.sender]));
+        require(_amount <= totalBalance, ExceededTotalBalance(totalBalance));
         balances[msg.sender] -= _amount;
         totalBalance -= _amount;
         dogeCoin.safeTransfer(msg.sender, _amount);
@@ -106,9 +107,11 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
         SendParam calldata _sendParam,
         MessagingFee calldata _fee
     ) external payable {
+        require(_oft != address(0), InvalidAddress());
         dogeCoin.approve(_oft, _amount);
         _amount = IDogeForGoat(_oft).depositAndSend{ value: msg.value }(_sendParam, _fee, msg.sender);
         balances[msg.sender] -= _amount;
         totalBalance -= _amount;
+        emit Bridge(msg.sender, _amount, _sendParam);
     }
 }

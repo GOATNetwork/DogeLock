@@ -1,14 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
+import { SendParam } from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
+
 interface IDogeLock {
     // Events
     event Lock(address user, uint256 amount, uint256 blockNumber);
     event Unlock(address user, uint256 amount, uint256 blockNumber);
+    event Bridge(address user, uint256 amount, SendParam sendParam);
 
     // Custom errors
+    error InvalidAddress();
     error InvalidAmount();
     error ExceededBalance(uint256);
+    error ExceededTotalBalance(uint256);
     error ExceededPersonalMax(uint256);
     error ExceededTotalMax(uint256);
     error BelowMin();
