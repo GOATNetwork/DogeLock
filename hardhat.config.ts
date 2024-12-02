@@ -64,8 +64,11 @@ const config: HardhatUserConfig = {
             eid: EndpointId.SEPOLIA_V2_TESTNET,
             url: process.env.RPC_URL_SEPOLIA || 'https://rpc.sepolia.org/',
             accounts,
-            oftAdapter: {
-                tokenAddress: '0x0', // Set the token address for the OFT adapter
+            configOption: {
+                endpoint: '0x6EDCE65403992e310A62460808c4b910D972f10f',
+                sendLib: '0xcc1ae8Cf5D3904Cef3360A9532B477529b177cCE',
+                receiveLib: '0xdAf00F5eE2158dD58E0d3857851c432E34A3A851',
+                executor: '0x718B92b5CB0a5552039B593faF724D182A881eDA',
             },
         },
         'metis-testnet': {
@@ -73,20 +76,27 @@ const config: HardhatUserConfig = {
             url: 'https://sepolia.metisdevops.link',
             accounts,
         },
-        'avalanche-testnet': {
-            eid: EndpointId.AVALANCHE_V2_TESTNET,
-            url: process.env.RPC_URL_FUJI || 'https://rpc.ankr.com/avalanche_fuji',
-            accounts,
-        },
-        'amoy-testnet': {
-            eid: EndpointId.AMOY_V2_TESTNET,
-            url: process.env.RPC_URL_AMOY || 'https://polygon-amoy-bor-rpc.publicnode.com',
-            accounts,
-        },
         'bsc-testnet': {
             eid: EndpointId.BSC_V2_TESTNET,
             url: process.env.RPC_URL_BSC_TESTNET || 'https://polygon-amoy-bor-rpc.publicnode.com',
             accounts,
+            configOption: {
+                endpoint: '0x6EDCE65403992e310A62460808c4b910D972f10f',
+                sendLib: '0x55f16c442907e86D764AFdc2a07C2de3BdAc8BB7',
+                receiveLib: '0x188d4bbCeD671A7aA2b5055937F79510A32e9683',
+                executor: '0x31894b190a8bAbd9A067Ce59fde0BfCFD2B18470',
+            },
+        },
+        'bsc-mainnet': {
+            eid: EndpointId.BSC_V2_MAINNET,
+            url: process.env.RPC_URL_BSC_MAINNET,
+            accounts,
+            configOption: {
+                endpoint: '0x1a44076050125825900e736c501f859c50fE728c',
+                sendLib: '0x9f8c645f2d0b2159767bd6e0839de4be49e823de',
+                receiveLib: '0xB217266c3A98C8B2709Ee26836C98cf12f6cCEC1',
+                executor: '0x3ebD570ed38B1b3b4BC886999fcF507e9D584859',
+            },
         },
         hardhat: {
             // Need this for testing because TestHelperOz5.sol is exceeding the compiled contract size limit
@@ -94,12 +104,6 @@ const config: HardhatUserConfig = {
         },
         localhost: {
             url: 'http://127.0.0.1:8545',
-            accounts: [
-                '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
-                '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d',
-                '0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a',
-                '0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6',
-            ],
         },
         dev: {
             url: 'http://localhost:8545',
