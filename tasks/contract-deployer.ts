@@ -5,15 +5,18 @@ task('deployOFT', 'Deploy OFT contracts on source/destination chain')
     .addParam('chain', 'Source/Destination chain')
     .addOptionalParam('owner', 'contract owner')
     .addOptionalParam('dogecoin', 'Dogecoin contract of source chain')
-    .addOptionalParam('eidPeer', 'Peer eid')
-    .addOptionalParam('oftPeer', 'Peer OFT contract')
-    .addOptionalParam('initialValue', 'The amount dogecoin minted when deployed')
+    .addOptionalParam('eidpeer', 'Peer eid')
+    .addOptionalParam('oftpeer', 'Peer OFT contract')
+    .addOptionalParam('initialvalue', 'The amount dogecoin minted when deployed')
     .addOptionalParam('oft', 'OFT contract')
+    .addOptionalParam('preview', 'Is previewing the deploy chain info')
     .setAction(async (arg, { ethers, network }) => {
         const [deployer] = await ethers.getSigners()
         const deployerAddr = await deployer.getAddress()
+        const owner = arg.owner == undefined ? deployerAddr : arg.owner
         console.log('network', network.name, (await ethers.provider.getNetwork()).chainId)
         console.log('deployerAddr :', deployerAddr, ' Balance: ', await ethers.provider.getBalance(deployerAddr))
+        console.log('Contract Owner: ', owner)
         const eid = network.config.eid // 40161 sepolia 30102 BSC
         let endpoint
         if (network.config.configOption == undefined) {
@@ -24,7 +27,9 @@ task('deployOFT', 'Deploy OFT contracts on source/destination chain')
             endpoint = network.config.configOption.endpoint
         }
         console.log('eid:', eid, ' endpoint:', endpoint)
-
+        if (arg.preview != 'false') {
+            return
+        }
         /*
          * @dev deploying on source chain (deploying Lock and DogeForGoat contracts).
          * @dev Warning: must set endPoint, dogecoin, owner if deploying on mainnet.
@@ -34,6 +39,7 @@ task('deployOFT', 'Deploy OFT contracts on source/destination chain')
             let dogecoin
             if (arg.dogecoin == undefined) {
                 dogecoin = await DogecoinMock.deploy()
+                console.log('Deployed Dogecoin: ', dogecoin.address)
             } else {
                 dogecoin = await DogecoinMock.attach(arg.dogecoin)
             }
@@ -46,9 +52,6 @@ task('deployOFT', 'Deploy OFT contracts on source/destination chain')
             const dogeLockLogic = await DogeLock.deploy(dogecoin.address)
             const dfgOftLogic = await DogeForGoat.deploy(dogecoin.address, endpoint)
 
-            const owner = arg.owner == undefined ? deployerAddr : arg.owner
-            console.log(owner)
-
             // deploy proxies and initialize
             const lockProxy = await UpgradeableProxy.deploy(dogeLockLogic.address, owner)
             const dogeLock = DogeLock.attach(lockProxy.address)
@@ -59,8 +62,8 @@ task('deployOFT', 'Deploy OFT contracts on source/destination chain')
             await dfgOft.initialize(owner)
 
             // mint Dogecoin on localhost or testnet
-            if (arg.initialValue != undefined) {
-                await dogecoin.mint(deployerAddr, BigNumber.from(arg.initialValue))
+            if (arg.initialvalue != undefined) {
+                await dogecoin.mint(deployerAddr, BigNumber.from(arg.initialvalue))
             }
 
             console.log('----- Source Chain -----')
@@ -72,25 +75,27 @@ task('deployOFT', 'Deploy OFT contracts on source/destination chain')
             // @dev deploying on destination chain (deploying OFT to receive DogeForGoat)
         } else if (arg.chain == 'dest') {
             const GoatOFT = await ethers.getContractFactory('GoatOFT')
-            const owner = arg.owner == undefined ? deployerAddr : arg.owner
-            const goatOFT = await GoatOFT.deploy('Goat Doge', 'GD', endpoint, owner)
+            // const goatOFT = await GoatOFT.deploy('Goat Doge', 'GD', endpoint, owner)
 
-            if (arg.eidPeer != undefined && arg.oftPeer != undefined) {
+            if (arg.eidpeer != undefined && arg.oftpeer != undefined) {
                 if (network.config.configOption != undefined) {
+                    console.log('   Setting LayerZero config options...')
                     const EndpointFactory = await ethers.getContractFactory('EndpointV2Mock')
                     const endpointContract = await EndpointFactory.attach(endpoint)
+                    console.log(await endpointContract.lzToken())
+                    return
                     await endpointContract.setSendLibrary(
                         goatOFT.address,
-                        arg.eidPeer,
+                        arg.eidpeer,
                         network.config.configOption.sendLib
                     )
                     await endpointContract.setReceiveLibrary(
                         goatOFT.address,
-                        arg.eidPeer,
+                        arg.eidpeer,
                         network.config.configOption.receiveLib
                     )
                 }
-                await await goatOFT.setPeer(arg.eidPeer, ethers.utils.zeroPad(arg.oftPeer, 32))
+                // await await goatOFT.setPeer(arg.eidpeer, ethers.utils.zeroPad(arg.oftpeer, 32))
             }
 
             console.log('----- Destination Chain -----')
@@ -102,7 +107,7 @@ task('deployOFT', 'Deploy OFT contracts on source/destination chain')
                 console.error('OFT address not set')
                 return
             }
-            if (arg.eidPeer == undefined || arg.oftPeer == undefined) {
+            if (arg.eidpeer == undefined || arg.oftpeer == undefined) {
                 console.error('Peer info not set')
                 return
             }
@@ -112,16 +117,16 @@ task('deployOFT', 'Deploy OFT contracts on source/destination chain')
             if (network.config.configOption != undefined) {
                 const EndpointFactory = await ethers.getContractFactory('EndpointV2Mock')
                 const endpointContract = await EndpointFactory.attach(endpoint)
-                await endpointContract.setSendLibrary(oft.address, arg.eidPeer, network.config.configOption.sendLib)
+                await endpointContract.setSendLibrary(oft.address, arg.eidpeer, network.config.configOption.sendLib)
                 await endpointContract.setReceiveLibrary(
                     oft.address,
-                    arg.eidPeer,
+                    arg.eidpeer,
                     network.config.configOption.receiveLib
                 )
             }
 
-            await oft.setPeer(arg.eidPeer, ethers.utils.zeroPad(arg.oftPeer, 32))
+            await oft.setPeer(arg.eidpeer, ethers.utils.zeroPad(arg.oftpeer, 32))
 
-            console.log('Peer set', arg.eidPeer, arg.oftPeer)
+            console.log('Peer set', arg.eidpeer, arg.oftpeer)
         }
     })

@@ -78,7 +78,7 @@ const config: HardhatUserConfig = {
         },
         'bsc-testnet': {
             eid: EndpointId.BSC_V2_TESTNET,
-            url: process.env.RPC_URL_BSC_TESTNET || 'https://polygon-amoy-bor-rpc.publicnode.com',
+            url: process.env.RPC_URL_BSC_TESTNET || 'https://bsc-testnet-rpc.publicnode.com',
             accounts,
             configOption: {
                 endpoint: '0x6EDCE65403992e310A62460808c4b910D972f10f',
@@ -89,7 +89,7 @@ const config: HardhatUserConfig = {
         },
         'bsc-mainnet': {
             eid: EndpointId.BSC_V2_MAINNET,
-            url: process.env.RPC_URL_BSC_MAINNET,
+            url: process.env.RPC_URL_BSC_MAINNET || 'https://bsc.meowrpc.com',
             accounts,
             configOption: {
                 endpoint: '0x1a44076050125825900e736c501f859c50fE728c',
