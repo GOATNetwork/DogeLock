@@ -184,7 +184,7 @@ describe('Doge For Goat OFT Test', function () {
     // A test case to verify token transfer functionality
     it('should send locked token from DogeLock', async function () {
         const DogeLock = await ethers.getContractFactory('DogeLockUpgradeable')
-        const dogeLock = await DogeLock.deploy(dogecoin.address)
+        const dogeLock = await DogeLock.deploy(dogecoin.address, dogeForGoat.address)
         await dogeLock.initialize(ownerA.address)
         // Minting an initial amount of tokens to ownerA's address in the myOFTA contract
         const initialAmountLD = ethers.utils.parseUnits('100', 8)
@@ -213,9 +213,7 @@ describe('Doge For Goat OFT Test', function () {
         // Approving the native fee to be spent by the myOFTA contract
         await dogecoin.connect(ownerA).approve(dogeLock.address, tokensToSendLD)
         await dogeLock.connect(ownerA).lock(tokensToSendLD)
-        await dogeLock
-            .connect(ownerA)
-            .bridge(dogeForGoat.address, tokensToSendLD, sendParam, [nativeFee, 0], { value: nativeFee })
+        await dogeLock.connect(ownerA).bridge(tokensToSendLD, sendParam, [nativeFee, 0], { value: nativeFee })
 
         // Fetching the final token balances of ownerA and ownerB
         const finalBalanceA = await dogeForGoat.balanceOf(ownerA.address)
