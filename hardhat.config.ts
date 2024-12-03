@@ -17,6 +17,7 @@ import '@typechain/hardhat'
 import './tasks/create-test-data'
 import './tasks/bridge-helper'
 import './tasks/contract-deployer'
+import './tasks/user-operations'
 
 // Set your preferred authentication method
 //

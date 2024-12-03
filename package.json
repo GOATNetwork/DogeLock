@@ -21,7 +21,7 @@
     "start-local-node": "hardhat node --port 8545 --hostname 0.0.0.0 --no-deploy",
     "deploy-contracts:localhost": "hardhat run deploy/DogeLockTestDeploy.ts --network localhost",
     "deploy-contracts:testnet": "hardhat run deploy/DogeLockTestDeploy.ts --network testnet",
-    "prepare-subgraph:localhost": "cd subgraph && mustache localnet.json subgraph.yaml.template > subgraph.yaml",
+    "prepare-subgraph:localhost": "cd subgraph && mustache localhost.json subgraph.yaml.template > subgraph.yaml",
     "prepare-subgraph:testnet": "cd subgraph && mustache testnet.json subgraph.yaml.template > subgraph.yaml",
     "codegen": "cd subgraph && graph codegen subgraph.yaml",
     "build-subgraph": "cd subgraph && graph build",

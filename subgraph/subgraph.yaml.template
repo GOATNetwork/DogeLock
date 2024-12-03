@@ -19,8 +19,7 @@ dataSources:
         - User
         - LockEvent
         - UnlockEvent
-        - OFTSentEvent
-        - OFTReceivedEvent
+        - BridgeEvent
         - GlobalStat
       abis:
         - name: DogeLock

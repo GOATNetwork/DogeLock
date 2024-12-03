@@ -8,9 +8,9 @@ dataSources:
     name: DogeLock
     network: localhost
     source:
-      address: "0xa82fF9aFd8f496c3d6ac40E2a0F282E47488CFc9"
+      address: "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd"
       abi: DogeLock
-      startBlock: 42
+      startBlock: 163
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -19,8 +19,7 @@ dataSources:
         - User
         - LockEvent
         - UnlockEvent
-        - OFTSentEvent
-        - OFTReceivedEvent
+        - BridgeEvent
         - GlobalStat
       abis:
         - name: DogeLock
