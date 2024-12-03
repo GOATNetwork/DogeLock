@@ -91,16 +91,16 @@ npx hardhat lz:deploy --help
 
 ## Deployed Contracts
 
-### Sepolia (source chain)
-
-| Contract | Address                                    |
-| -------- | ------------------------------------------ |
-| Dogecoin | 0x6847D8C9DB2bC2a0086Cb4Ba067e7f1112ADb6E9 |
-| Lock     | 0xF156860BCb65Fe5e49955d83Ff6880f799E38084 |
-| OFT      | 0x159320C22cA561282427d0b65C0FE28Bbb3498DC |
-
 ### BSC Testnet (destination chain)
 
 | Contract | Address                                    |
 | -------- | ------------------------------------------ |
-| OFT      | 0x218ab55484482409aAfD035066eb1e0315BE0084 |
+| Dogecoin | 0x9A359f736674913e405Eb64C2048c6293DC97CbF |
+| Lock     | 0x7E7Bb472689876C5A4C3AF0a62C5325470a3472a |
+| OFT      | 0x5dF99c6E2370DC36d12246Cb40F940Ec2b6777b4 |
+
+### Sepolia (source chain)
+
+| Contract | Address                                    |
+| -------- | ------------------------------------------ |
+| OFT      | 0x298b2776D49ffe9756C5BE0377e889928be40a61 |
