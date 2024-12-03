@@ -11,11 +11,14 @@ task('bridge', 'bridge dogecoin through OFT/Lock')
     .addParam('value', 'The amount to bridge')
     .addOptionalParam('execute', 'Execute the bridging transaction')
     .addOptionalParam('lock', 'DogeLock contract address')
+    .addOptionalParam('receiver', 'Token receiver on the destination chain')
     .setAction(async (arg, { ethers, network }) => {
         const [deployer] = await ethers.getSigners()
         const deployerAddr = await deployer.getAddress()
+        const receiver = arg.receiver ? arg.receiver : deployerAddr
         console.log('network', network.name, (await ethers.provider.getNetwork()).chainId)
-        console.log('deployerAddr :', deployerAddr, ' Balance: ', await ethers.provider.getBalance(deployerAddr))
+        console.log('deployerAddr: ', deployerAddr, ' Balance: ', await ethers.provider.getBalance(deployerAddr))
+        console.log('Token receiver: ', receiver)
 
         const OFT = await ethers.getContractFactory('DogeForGoatUpgradeable')
         const oft = await OFT.attach(arg.oft)
@@ -27,7 +30,7 @@ task('bridge', 'bridge dogecoin through OFT/Lock')
             console.log('Through send')
             let sendParam = [
                 eid,
-                ethers.utils.zeroPad(deployerAddr, 32),
+                ethers.utils.zeroPad(receiver, 32),
                 BigNumber.from(arg.value),
                 BigNumber.from(arg.value),
                 options,
@@ -52,7 +55,7 @@ task('bridge', 'bridge dogecoin through OFT/Lock')
             const amount = BigNumber.from(arg.value)
             let sendParam = [
                 eid,
-                ethers.utils.zeroPad(deployerAddr, 32),
+                ethers.utils.zeroPad(receiver, 32),
                 amount.mul(CONVERSION_MULTIPLIER),
                 amount.mul(CONVERSION_MULTIPLIER),
                 options,
