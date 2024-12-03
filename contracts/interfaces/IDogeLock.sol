@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import { SendParam } from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
+import { SendParam, MessagingFee } from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
 
 interface IDogeLock {
     // Events
@@ -18,6 +18,7 @@ interface IDogeLock {
     error ExceededTotalMax(uint256);
     error BelowMin();
     error TimeNotReached();
+    error PaymentNotSupported();
 
     /**
      * @dev Owner function to set the max total locking amount of Dogecoin
@@ -47,4 +48,12 @@ interface IDogeLock {
      * @dev The amount and unlock time is recorded for points calculation on Goat Network
      */
     function unlock(uint256 _amount) external;
+
+    /**
+     * @dev Bridge locked dogecoin.
+     * @param _amount The amount the user wishes to bridge.
+     * @param _sendParam The parameters for the send operation.
+     * @param _fee The calculated fee for the send() operation.
+     */
+    function bridge(uint256 _amount, SendParam calldata _sendParam, MessagingFee calldata _fee) external payable;
 }
