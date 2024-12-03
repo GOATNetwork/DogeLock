@@ -20,6 +20,10 @@ interface IDogeLock {
     error TimeNotReached();
     error PaymentNotSupported();
 
+    // public variables
+    function balances(address) external view returns (uint256);
+    function totalBalance() external view returns (uint256);
+
     /**
      * @dev Owner function to set the max total locking amount of Dogecoin
      * @param _amount The new max total locking amount

@@ -4,17 +4,14 @@ pragma solidity ^0.8.27;
 import { OFTUpgradeable } from "@layerzerolabs/oft-evm-upgradeable/contracts/oft/OFTUpgradeable.sol";
 import { SendParam, OFTReceipt, MessagingReceipt, MessagingFee } from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
 import { SafeERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { IDogeForGoat } from "./interfaces/IDogeForGoat.sol";
 import { IDogeLock } from "./interfaces/IDogeLock.sol";
 
 /**
  * @dev Locking and bridging contract for Dogecoin.
  */
-contract DogeForGoatUpgradeable is OFTUpgradeable {
+contract DogeForGoatUpgradeable is IDogeForGoat, OFTUpgradeable {
     using SafeERC20 for IERC20;
-
-    event Deposit(address indexed user, uint256 indexed amount, address indexed to);
-    event Withdraw(address indexed user, uint256 indexed amount, address indexed to);
-    event DepositAndBridge(address indexed user, uint256 indexed amount);
 
     IERC20 public immutable dogeCoin;
 

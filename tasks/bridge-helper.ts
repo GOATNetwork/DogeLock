@@ -10,6 +10,7 @@ task('bridge', 'bridge dogecoin through OFT/Lock')
     .addParam('eid', 'Eid of destination chain')
     .addParam('value', 'The amount to bridge')
     .addOptionalParam('execute', 'Execute the bridging transaction')
+    .addOptionalParam('lock', 'DogeLock contract address')
     .setAction(async (arg, { ethers, network }) => {
         const [deployer] = await ethers.getSigners()
         const deployerAddr = await deployer.getAddress()
@@ -41,10 +42,14 @@ task('bridge', 'bridge dogecoin through OFT/Lock')
             }
         } else {
             console.log('Through bridge')
+            if (arg.lock == undefined) {
+                console.error('DogeLock not specified!')
+                return
+            }
             const Lock = await ethers.getContractFactory('DogeLockUpgradeable')
-            const lock = await Lock.attach('0xF156860BCb65Fe5e49955d83Ff6880f799E38084')
-            const amount = BigNumber.from(arg.value)
+            const lock = await Lock.attach(arg.lock)
 
+            const amount = BigNumber.from(arg.value)
             let sendParam = [
                 eid,
                 ethers.utils.zeroPad(deployerAddr, 32),
