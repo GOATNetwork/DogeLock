@@ -112,6 +112,7 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
         _amount = IDogeForGoat(_oft).depositAndSend{ value: msg.value }(_sendParam, _fee, msg.sender);
         balances[msg.sender] -= _amount;
         totalBalance -= _amount;
+        emit Unlock(msg.sender, _amount, block.number);
         emit Bridge(msg.sender, _amount, _sendParam);
     }
 }
