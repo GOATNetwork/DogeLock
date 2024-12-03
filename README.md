@@ -89,64 +89,18 @@ More information about available CLI arguments can be found using the `--help` f
 npx hardhat lz:deploy --help
 ```
 
-## Task Operations
+## Deployed Contracts
 
-All tasks should be run with the `--network testnet` parameter.
+### BSC Testnet (destination chain)
 
-### Prerequisites
+| Contract | Address                                    |
+| -------- | ------------------------------------------ |
+| Dogecoin | 0x9A359f736674913e405Eb64C2048c6293DC97CbF |
+| Lock     | 0x7E7Bb472689876C5A4C3AF0a62C5325470a3472a |
+| OFT      | 0x5dF99c6E2370DC36d12246Cb40F940Ec2b6777b4 |
 
-1. Create a `subgraph/testnet.json` file with contract addresses:
-```json
-{
-    "DogeLock": "0xF156860BCb65Fe5e49955d83Ff6880f799E38084",
-    "Token": "0x6847D8C9DB2bC2a0086Cb4Ba067e7f1112ADb6E9"
-}
-```
+### Sepolia (source chain)
 
-2. Set up your environment variables in `.env`:
-```env
-PRIVATE_KEY=your_private_key
-```
-
-### Available Tasks
-
-#### Lock Tokens
-Lock DOGE tokens in the contract:
-```bash
-npx hardhat user-lock --amount <amount> --network testnet
-```
-- `amount`: Amount of DOGE to lock (e.g., 50)
-
-#### Unlock Tokens
-Unlock previously locked DOGE tokens:
-```bash
-npx hardhat user-unlock --amount <amount> --network testnet
-```
-- `amount`: Amount of DOGE to unlock (e.g., 50)
-
-#### Bridge Tokens
-Bridge DOGE tokens to another chain:
-```bash
-npx hardhat user-bridge --amount <amount> --network testnet
-```
-- `amount`: Amount of DOGE to bridge (e.g., 50)
-
-#### Set Global Max Limit
-Set the maximum total amount of DOGE that can be locked in the contract:
-```bash
-npx hardhat set-max-limit --amount <amount> --network testnet
-```
-- `amount`: Maximum total amount in DOGE (e.g., 1000000)
-
-#### Set Personal Limits
-Set the minimum and maximum amount of DOGE that each user can lock:
-```bash
-npx hardhat set-personal-limits --max <max_amount> --min <min_amount> --network testnet
-```
-- `max`: Maximum amount per user in DOGE (e.g., 500000)
-- `min`: Minimum amount per user in DOGE (e.g., 50)
-
-### Notes
-- All amounts are in DOGE (will be automatically converted to the correct decimals)
-- Tasks with `onlyOwner` functions require the deployer's private key
-- Gas limits are preset but can be adjusted in the task code if needed
+| Contract | Address                                    |
+| -------- | ------------------------------------------ |
+| OFT      | 0x298b2776D49ffe9756C5BE0377e889928be40a61 |

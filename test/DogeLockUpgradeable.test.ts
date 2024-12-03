@@ -17,7 +17,7 @@ describe('Doge Lock Test', function () {
     const eidB = 2
     // Declaration of variables to be used in the test suite
     let DogeLock: ContractFactory
-    let ERC20Mock: ContractFactory
+    let DogecoinMock: ContractFactory
     let ownerA: SignerWithAddress
     let ownerB: SignerWithAddress
 
@@ -29,7 +29,7 @@ describe('Doge Lock Test', function () {
         // Contract factory for our tested contract
         DogeLock = await ethers.getContractFactory('DogeLockUpgradeable')
 
-        ERC20Mock = await ethers.getContractFactory('DogecoinMock')
+        DogecoinMock = await ethers.getContractFactory('DogecoinMock')
 
         // Fetching the first three signers (accounts) from Hardhat's local Ethereum network
         const signers = await ethers.getSigners()
@@ -39,9 +39,9 @@ describe('Doge Lock Test', function () {
 
     // beforeEach hook for setup that runs before each test in the block
     beforeEach(async function () {
-        dogecoin = await ERC20Mock.deploy('Dogecoin', 'DOG')
+        dogecoin = await DogecoinMock.deploy()
 
-        dogeLock = await DogeLock.deploy(dogecoin.address, (await ethers.provider.getBlock('latest')).timestamp + 100)
+        dogeLock = await DogeLock.deploy(dogecoin.address)
         await dogeLock.initialize(ownerA.address)
     })
 
@@ -72,18 +72,18 @@ describe('Doge Lock Test', function () {
 
     it('test lock/unlock revert cases', async function () {
         // Minting an initial amount of tokens to ownerA's address in the myOFTA contract
-        const maxLimit = ethers.utils.parseUnits('5000000', 8)
-        const tokensToSend = ethers.utils.parseUnits('50', 8)
+        const maxLimit = ethers.utils.parseUnits('500000', 8)
+        const minLimit = ethers.utils.parseUnits('50', 8)
         await dogecoin.mint(ownerA.address, maxLimit.mul(3))
 
         await dogecoin.connect(ownerA).approve(dogeLock.address, maxLimit.mul(3))
         // too small
-        await expect(dogeLock.connect(ownerA).lock(tokensToSend.sub(1))).to.be.revertedWith('BelowMin')
+        await expect(dogeLock.connect(ownerA).lock(minLimit.sub(1))).to.be.revertedWith('BelowMin')
         // too big
         await expect(dogeLock.connect(ownerA).lock(maxLimit.add(1))).to.be.revertedWith('ExceededPersonalMax')
 
         // over total max
-        for (let i = 0; i < 4; ++i) {
+        for (let i = 0; i < 40; ++i) {
             const user = await ethers.getImpersonatedSigner(ethers.Wallet.createRandom().address)
             await ownerB.sendTransaction({
                 to: user.address,
@@ -91,13 +91,12 @@ describe('Doge Lock Test', function () {
             })
             await dogecoin.mint(user.address, maxLimit)
             await dogecoin.connect(user).approve(dogeLock.address, maxLimit)
-            await dogeLock.connect(user).lock(ethers.utils.parseUnits('4500000', 8))
+            await dogeLock.connect(user).lock(maxLimit.sub(ONE_UNIT.mul(2)))
         }
         await expect(dogeLock.connect(ownerA).lock(maxLimit)).to.be.revertedWith('ExceededTotalMax')
         // success lock
-        await dogeLock.connect(ownerA).lock(tokensToSend)
-
-        await expect(dogeLock.connect(ownerA).unlock(tokensToSend.add(1))).to.be.revertedWith('ExceededBalance')
+        await dogeLock.connect(ownerA).lock(minLimit)
+        await expect(dogeLock.connect(ownerA).unlock(minLimit.add(1))).to.be.revertedWith('ExceededBalance')
     })
 
     it('test owner functions', async function () {
