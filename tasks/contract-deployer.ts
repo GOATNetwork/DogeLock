@@ -82,8 +82,6 @@ task('deployOFT', 'Deploy OFT contracts on source/destination chain')
                     console.log('   Setting LayerZero config options...')
                     const EndpointFactory = await ethers.getContractFactory('EndpointV2Mock')
                     const endpointContract = await EndpointFactory.attach(endpoint)
-                    console.log(await endpointContract.lzToken())
-                    return
                     await endpointContract.setSendLibrary(
                         goatOFT.address,
                         arg.eidpeer,

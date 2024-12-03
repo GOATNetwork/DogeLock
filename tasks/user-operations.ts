@@ -179,7 +179,7 @@ task('user-bridge', 'Bridge tokens on testnet')
 
                 // 执行跨链
                 console.log('Executing bridge transaction...')
-                const tx = await dogeLock.bridge(dogeForGoat.address, bridgeAmount, sendParam, [nativeFee, 0], {
+                const tx = await dogeLock.bridge(bridgeAmount, sendParam, [nativeFee, 0], {
                     value: nativeFee,
                     gasLimit: 1000000,
                 })

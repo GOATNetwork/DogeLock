@@ -4,17 +4,14 @@ pragma solidity ^0.8.27;
 import { OFTUpgradeable } from "@layerzerolabs/oft-evm-upgradeable/contracts/oft/OFTUpgradeable.sol";
 import { SendParam, OFTReceipt, MessagingReceipt, MessagingFee } from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
 import { SafeERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { IDogeForGoat } from "./interfaces/IDogeForGoat.sol";
 import { IDogeLock } from "./interfaces/IDogeLock.sol";
 
 /**
  * @dev Locking and bridging contract for Dogecoin.
  */
-contract DogeForGoatUpgradeable is OFTUpgradeable {
+contract DogeForGoatUpgradeable is IDogeForGoat, OFTUpgradeable {
     using SafeERC20 for IERC20;
-
-    event Deposit(address indexed user, uint256 indexed amount, address indexed to);
-    event Withdraw(address indexed user, uint256 indexed amount, address indexed to);
-    event DepositAndBridge(address indexed user, uint256 indexed amount);
 
     IERC20 public immutable dogeCoin;
 
@@ -44,7 +41,7 @@ contract DogeForGoatUpgradeable is OFTUpgradeable {
      * @param _addr The address needed to be converted.
      * @return The converted address.
      */
-    function addressToBytes32(address _addr) external pure returns (bytes32) {
+    function addressToBytes32(address _addr) public pure returns (bytes32) {
         return bytes32(uint256(uint160(_addr)));
     }
 
@@ -75,6 +72,8 @@ contract DogeForGoatUpgradeable is OFTUpgradeable {
      *      - nativeFee: The native fee.
      *      - lzTokenFee: The lzToken fee.
      * @param _refundAddress The address to receive any excess funds.
+     * @return _msgReceipt The receipt for the send operation.
+     * @return _oftReceipt The OFT receipt information.
      * @return _dogeAmount The amount of dogecoin is deposited.
      *
      * @dev Note: approve is required
@@ -83,7 +82,7 @@ contract DogeForGoatUpgradeable is OFTUpgradeable {
         SendParam calldata _sendParam,
         MessagingFee calldata _fee,
         address _refundAddress
-    ) public payable returns (uint256 _dogeAmount) {
+    ) public payable returns (MessagingReceipt memory _msgReceipt, OFTReceipt memory _oftReceipt, uint256 _dogeAmount) {
         // @dev get the amount after removeDust().
         // - amountSentLD is the amount in local decimals that was ACTUALLY sent/debited from the sender.
         // - amountReceivedLD is the amount in local decimals that will be received/credited to the recipient on the remote OFT instance.
@@ -99,9 +98,11 @@ contract DogeForGoatUpgradeable is OFTUpgradeable {
         (bytes memory message, bytes memory options) = _buildMsgAndOptions(_sendParam, amountReceivedLD);
 
         // @dev Sends the message to the LayerZero endpoint and returns the LayerZero msg receipt.
-        MessagingReceipt memory msgReceipt = _lzSend(_sendParam.dstEid, message, options, _fee, _refundAddress);
+        _msgReceipt = _lzSend(_sendParam.dstEid, message, options, _fee, _refundAddress);
+        // @dev Formulate the OFT receipt.
+        _oftReceipt = OFTReceipt(amountSentLD, amountReceivedLD);
 
-        emit OFTSent(msgReceipt.guid, _sendParam.dstEid, msg.sender, amountSentLD, amountReceivedLD);
+        emit OFTSent(_msgReceipt.guid, _sendParam.dstEid, msg.sender, amountSentLD, amountReceivedLD);
         emit DepositAndBridge(msg.sender, _dogeAmount);
     }
 }
