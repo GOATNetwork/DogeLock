@@ -1,7 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { BigNumber } from 'ethers'
 import { ethers } from 'hardhat'
 
 async function main() {
@@ -12,28 +11,33 @@ async function main() {
     const eidA = 1
     const eidB = 2
 
+    // Get contract factories
     const EndpointV2Mock = await ethers.getContractFactory('EndpointV2Mock')
     const dogecoinMock = await ethers.getContractFactory('DogecoinMock')
     const DogeLock = await ethers.getContractFactory('DogeLockUpgradeable')
     const MyOFT = await ethers.getContractFactory('MyOFTMock')
+    const UpgradeableProxy = await ethers.getContractFactory('UpgradeableProxy')
 
     // chain A:
     const tokenA = await dogecoinMock.deploy()
     const mockEndpointV2A = await EndpointV2Mock.deploy(eidA)
-    const dogeLock = await DogeLock.deploy(tokenA.address, mockEndpointV2A.address, BigNumber.from(0))
+    const dogeLockImpl = await DogeLock.deploy(tokenA.address)
+
+    // Deploy proxy with implementation
+    const dogeLockProxy = await UpgradeableProxy.deploy(dogeLockImpl.address, deployerAddr)
+    // Get DogeLock interface at proxy address
+    const dogeLock = DogeLock.attach(dogeLockProxy.address)
 
     // chain B:
     const tokenB = await dogecoinMock.deploy()
     const mockEndpointV2B = await EndpointV2Mock.deploy(eidB)
-    const myOFTAdapter = await MyOFT.deploy(tokenB.address, mockEndpointV2A.address, deployerAddr)
+    const myOFTAdapter = await MyOFT.deploy('MyOFT', 'MOFT', mockEndpointV2A.address, deployerAddr)
 
-    // @dev Test Only: Setting destination endpoints in the LZEndpoint mock for each MyOFT instance
+    // Set up endpoints and initialize contracts
     await mockEndpointV2A.setDestLzEndpoint(myOFTAdapter.address, mockEndpointV2B.address)
     await mockEndpointV2B.setDestLzEndpoint(dogeLock.address, mockEndpointV2A.address)
 
     await dogeLock.initialize(deployerAddr)
-    await dogeLock.setPeer(eidB, ethers.utils.zeroPad(myOFTAdapter.address, 32))
-    await myOFTAdapter.setPeer(eidA, ethers.utils.zeroPad(dogeLock.address, 32))
 
     await tokenA.mint(deployerAddr, ethers.utils.parseUnits('1', 18))
 
@@ -42,14 +46,14 @@ async function main() {
     console.log('Mock EndpointA:', mockEndpointV2A.address)
     console.log('Doge Lock:', dogeLock.address)
     console.log('-----Chain B-----')
-    console.log('Mock TokenA:', tokenB.address)
-    console.log('Mock EndpointA:', mockEndpointV2B.address)
-    console.log('Doge Lock:', myOFTAdapter.address)
+    console.log('Mock TokenB:', tokenB.address)
+    console.log('Mock EndpointB:', mockEndpointV2B.address)
+    console.log('OFT Adapter:', myOFTAdapter.address)
 
     // Save deployment info for subgraph
     const deploymentInfo = {
         DogeLock: dogeLock.address,
-        Token: token.address,
+        Token: tokenA.address,
         EndpointV2: mockEndpointV2A.address,
         blockNumber: (await ethers.provider.getBlock('latest')).number,
     }
