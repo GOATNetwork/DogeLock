@@ -14,6 +14,7 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable dogeCoin;
+    address public immutable oft;
 
     uint256 constant DOGE_DECIMAL = 100_000_000;
 
@@ -28,8 +29,9 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
      * @dev Constructor for the DogeLockUpgradeable contract.
      * @param _dogeCoin The address of the Dogecoin token.
      */
-    constructor(address _dogeCoin) {
+    constructor(address _dogeCoin, address _oft) {
         dogeCoin = IERC20(_dogeCoin);
+        oft = _oft;
     }
 
     /**
@@ -72,10 +74,10 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
      */
     function lock(uint256 _amount) external {
         require(_amount >= personalMinLockAmount, BelowMin());
-        dogeCoin.safeTransferFrom(msg.sender, address(this), _amount);
         balances[msg.sender] += _amount;
         totalBalance += _amount;
         require(balances[msg.sender] <= personalMaxLockAmount, ExceededPersonalMax(balances[msg.sender]));
+        dogeCoin.safeTransferFrom(msg.sender, address(this), _amount);
         require(totalBalance <= maxLockAmount, ExceededTotalMax(totalBalance));
         emit Lock(msg.sender, _amount, block.number);
     }
@@ -87,6 +89,7 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
      */
     function unlock(uint256 _amount) external {
         require(_amount <= balances[msg.sender], ExceededBalance(balances[msg.sender]));
+        require(_amount <= totalBalance, ExceededTotalBalance(totalBalance));
         balances[msg.sender] -= _amount;
         totalBalance -= _amount;
         dogeCoin.safeTransfer(msg.sender, _amount);
@@ -95,20 +98,18 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
 
     /**
      * @dev Bridge locked dogecoin.
-     * @param _oft DogeForGoat OFT contract address.
      * @param _amount The amount the user wishes to bridge.
      * @param _sendParam The parameters for the send operation.
      * @param _fee The calculated fee for the send() operation.
      */
-    function bridge(
-        address _oft,
-        uint256 _amount,
-        SendParam calldata _sendParam,
-        MessagingFee calldata _fee
-    ) external payable {
-        dogeCoin.approve(_oft, _amount);
-        _amount = IDogeForGoat(_oft).depositAndSend{ value: msg.value }(_sendParam, _fee, msg.sender);
+    function bridge(uint256 _amount, SendParam calldata _sendParam, MessagingFee calldata _fee) external payable {
+        require(_fee.lzTokenFee == 0, PaymentNotSupported());
+        require(oft != address(0), InvalidAddress());
+        dogeCoin.approve(oft, _amount);
+        (, , _amount) = IDogeForGoat(oft).depositAndSend{ value: msg.value }(_sendParam, _fee, msg.sender);
         balances[msg.sender] -= _amount;
         totalBalance -= _amount;
+        emit Unlock(msg.sender, _amount, block.number);
+        emit Bridge(msg.sender, _amount, _sendParam);
     }
 }

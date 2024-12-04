@@ -15,41 +15,46 @@ async function main() {
     const EndpointV2Mock = await ethers.getContractFactory('EndpointV2Mock')
     const dogecoinMock = await ethers.getContractFactory('DogecoinMock')
     const DogeLock = await ethers.getContractFactory('DogeLockUpgradeable')
+    const DogeForGoatUpgradeable = await ethers.getContractFactory('DogeForGoatUpgradeable')
     const MyOFT = await ethers.getContractFactory('MyOFTMock')
 
-    // chain A:
-    const tokenA = await dogecoinMock.deploy()
+    // source chain
+    const dogecoin = await dogecoinMock.deploy()
     const mockEndpointV2A = await EndpointV2Mock.deploy(eidA)
-    const dogeLock = await DogeLock.deploy(tokenA.address, mockEndpointV2A.address, BigNumber.from(0))
+    const dfgOFT = await DogeForGoatUpgradeable.deploy(dogecoin.address, mockEndpointV2A.address)
+    const dogeLock = await DogeLock.deploy(dogecoin.address, dfgOFT.address)
 
-    // chain B:
-    const tokenB = await dogecoinMock.deploy()
+    // dest chain
     const mockEndpointV2B = await EndpointV2Mock.deploy(eidB)
-    const myOFTAdapter = await MyOFT.deploy(tokenB.address, mockEndpointV2A.address, deployerAddr)
+    const destOFT = await MyOFT.deploy('Dest OFT', 'DO', mockEndpointV2B.address, deployerAddr)
 
     // @dev Test Only: Setting destination endpoints in the LZEndpoint mock for each MyOFT instance
-    await mockEndpointV2A.setDestLzEndpoint(myOFTAdapter.address, mockEndpointV2B.address)
-    await mockEndpointV2B.setDestLzEndpoint(dogeLock.address, mockEndpointV2A.address)
+    await mockEndpointV2A.setDestLzEndpoint(destOFT.address, mockEndpointV2B.address)
+    await mockEndpointV2B.setDestLzEndpoint(dfgOFT.address, mockEndpointV2A.address)
 
+    // upgradeable contract initialize
+    await dfgOFT.initialize(deployerAddr)
     await dogeLock.initialize(deployerAddr)
-    await dogeLock.setPeer(eidB, ethers.utils.zeroPad(myOFTAdapter.address, 32))
-    await myOFTAdapter.setPeer(eidA, ethers.utils.zeroPad(dogeLock.address, 32))
 
-    await tokenA.mint(deployerAddr, ethers.utils.parseUnits('1', 18))
+    // set peer
+    await dfgOFT.setPeer(eidB, ethers.utils.zeroPad(destOFT.address, 32))
+    await destOFT.setPeer(eidA, ethers.utils.zeroPad(dogeLock.address, 32))
 
-    console.log('-----Chain A-----')
-    console.log('Mock TokenA:', tokenA.address)
+    await dogecoin.mint(deployerAddr, ethers.utils.parseUnits('1', 18))
+
+    console.log('-----Source Chain-----')
     console.log('Mock EndpointA:', mockEndpointV2A.address)
+    console.log('Dogecoin:', dogecoin.address)
     console.log('Doge Lock:', dogeLock.address)
-    console.log('-----Chain B-----')
-    console.log('Mock TokenA:', tokenB.address)
+    console.log('DogeForGoat:', dfgOFT.address)
+    console.log('------Dest Chain------')
     console.log('Mock EndpointA:', mockEndpointV2B.address)
-    console.log('Doge Lock:', myOFTAdapter.address)
+    console.log('Destination OFT:', destOFT.address)
 
     // Save deployment info for subgraph
     const deploymentInfo = {
         DogeLock: dogeLock.address,
-        Token: token.address,
+        Token: dogecoin.address,
         EndpointV2: mockEndpointV2A.address,
         blockNumber: (await ethers.provider.getBlock('latest')).number,
     }
