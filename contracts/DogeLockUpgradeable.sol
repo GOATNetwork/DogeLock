@@ -77,8 +77,8 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
         balances[msg.sender] += _amount;
         totalBalance += _amount;
         require(balances[msg.sender] <= personalMaxLockAmount, ExceededPersonalMax(balances[msg.sender]));
-        dogeCoin.safeTransferFrom(msg.sender, address(this), _amount);
         require(totalBalance <= maxLockAmount, ExceededTotalMax(totalBalance));
+        dogeCoin.safeTransferFrom(msg.sender, address(this), _amount);
         emit Lock(msg.sender, _amount, block.number);
     }
 
