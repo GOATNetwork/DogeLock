@@ -9,6 +9,7 @@ import 'hardhat-deploy'
 import 'solidity-coverage'
 import 'hardhat-contract-sizer'
 import '@nomiclabs/hardhat-ethers'
+import '@nomicfoundation/hardhat-verify'
 import '@layerzerolabs/toolbox-hardhat'
 import { HardhatUserConfig, HttpNetworkAccountsUserConfig } from 'hardhat/types'
 
@@ -104,6 +105,12 @@ const config: HardhatUserConfig = {
             url: 'http://localhost:8545',
             chainId: 1337,
         },
+    },
+    sourcify: {
+        enabled: false,
+    },
+    etherscan: {
+        apiKey: process.env.API_KEY,
     },
     namedAccounts: {
         deployer: {

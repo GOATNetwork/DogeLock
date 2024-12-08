@@ -1,3 +1,19 @@
+## Deployed Contracts
+
+### BSC Testnet (source chain)
+
+| Contract | Address                                    |
+| -------- | ------------------------------------------ |
+| Dogecoin | 0x9A359f736674913e405Eb64C2048c6293DC97CbF |
+| Lock     | 0x4461ccD816E9952Ebd0BaF0661ac4E28de0d5095 |
+| OFT      | 0x00                                       |
+
+### Goat (destination chain)
+
+| Contract | Address |
+| -------- | ------- |
+| OFT      | 0x00    |
+
 ## 1) Setup Project
 
 #### Installing dependencies
@@ -88,19 +104,3 @@ More information about available CLI arguments can be found using the `--help` f
 ```bash
 npx hardhat lz:deploy --help
 ```
-
-## Deployed Contracts
-
-### BSC Testnet (source chain)
-
-| Contract | Address                                    |
-| -------- | ------------------------------------------ |
-| Dogecoin | 0x9A359f736674913e405Eb64C2048c6293DC97CbF |
-| Lock     | 0x4461ccD816E9952Ebd0BaF0661ac4E28de0d5095 |
-| OFT      | 0x00                                       |
-
-### Goat (destination chain)
-
-| Contract | Address |
-| -------- | ------- |
-| OFT      | 0x00    |
