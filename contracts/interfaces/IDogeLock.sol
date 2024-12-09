@@ -21,6 +21,9 @@ interface IDogeLock {
     error PaymentNotSupported();
 
     // public variables
+    function maxLockAmount() external view returns (uint256);
+    function personalMaxLockAmount() external view returns (uint256);
+    function personalMinLockAmount() external view returns (uint256);
     function balances(address) external view returns (uint256);
     function totalBalance() external view returns (uint256);
 

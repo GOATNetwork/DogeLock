@@ -74,6 +74,15 @@ describe('Doge For Goat OFT Test', function () {
         await mockEndpointV2A.setDestLzEndpoint(goatOFT.address, mockEndpointV2B.address)
         await mockEndpointV2B.setDestLzEndpoint(dogeForGoat.address, mockEndpointV2A.address)
 
+        // set configs
+        const options = Options.newOptions().addExecutorLzReceiveOption(60000, 0).toHex().toString()
+        const enforcedOptionParam = [
+            eidB, // destination endpoint eid
+            1, // SEND message type
+            options,
+        ]
+        await dogeForGoat.connect(ownerA).setEnforcedOptions([enforcedOptionParam])
+
         // Setting each GoatOFT instance as a peer of the other in the mock LZEndpoint
         await dogeForGoat.connect(ownerA).setPeer(eidB, ethers.utils.zeroPad(goatOFT.address, 32))
         await goatOFT.connect(ownerB).setPeer(eidA, ethers.utils.zeroPad(dogeForGoat.address, 32))
@@ -89,15 +98,12 @@ describe('Doge For Goat OFT Test', function () {
         const tokensToSendLD = ethers.utils.parseUnits('60', 8)
         const tokensToSendSD = tokensToSendLD.mul(CONVERSION_MULTIPLIER)
 
-        // Defining extra message execution options for the send operation
-        const options = Options.newOptions().addExecutorLzReceiveOption(200000, 0).toHex().toString()
-
         const sendParam = [
             eidB,
             await dogeForGoat.addressToBytes32(ownerB.address),
             tokensToSendSD,
             tokensToSendSD,
-            options,
+            '0x',
             '0x',
             '0x',
         ]
@@ -146,15 +152,12 @@ describe('Doge For Goat OFT Test', function () {
         const tokensToSendLD = ethers.utils.parseUnits('60', 8)
         const tokensToSendSD = tokensToSendLD.mul(CONVERSION_MULTIPLIER)
 
-        // Defining extra message execution options for the send operation
-        const options = Options.newOptions().addExecutorLzReceiveOption(200000, 0).toHex().toString()
-
         const sendParam = [
             eidB,
             ethers.utils.zeroPad(ownerB.address, 32),
             tokensToSendSD,
             tokensToSendSD,
-            options,
+            '0x',
             '0x',
             '0x',
         ]
@@ -194,15 +197,12 @@ describe('Doge For Goat OFT Test', function () {
         const tokensToSendLD = ethers.utils.parseUnits('60', 8)
         const tokensToSendSD = tokensToSendLD.mul(CONVERSION_MULTIPLIER)
 
-        // Defining extra message execution options for the send operation
-        const options = Options.newOptions().addExecutorLzReceiveOption(200000, 0).toHex().toString()
-
         const sendParam = [
             eidB,
             ethers.utils.zeroPad(ownerB.address, 32),
             tokensToSendSD,
             tokensToSendSD,
-            options,
+            '0x',
             '0x',
             '0x',
         ]

@@ -1,5 +1,6 @@
 import { BigNumber } from 'ethers'
 import { task } from 'hardhat/config'
+import { Options } from '@layerzerolabs/lz-v2-utilities'
 
 task('deployOFT', 'Deploy OFT contracts on source/destination chain')
     .addParam('chain', 'Source/Destination chain')
@@ -75,7 +76,7 @@ task('deployOFT', 'Deploy OFT contracts on source/destination chain')
             // @dev deploying on destination chain (deploying OFT to receive DogeForGoat)
         } else if (arg.chain == 'dest') {
             const GoatOFT = await ethers.getContractFactory('GoatOFT')
-            // const goatOFT = await GoatOFT.deploy('Goat Doge', 'GD', endpoint, owner)
+            const goatOFT = await GoatOFT.deploy('Goat Doge', 'GD', endpoint, owner)
 
             if (arg.eidpeer != undefined && arg.oftpeer != undefined) {
                 if (network.config.configOption != undefined) {
@@ -93,7 +94,15 @@ task('deployOFT', 'Deploy OFT contracts on source/destination chain')
                         network.config.configOption.receiveLib
                     )
                 }
-                // await await goatOFT.setPeer(arg.eidpeer, ethers.utils.zeroPad(arg.oftpeer, 32))
+
+                const options = Options.newOptions().addExecutorLzReceiveOption(60000, 0).toHex().toString()
+                const enforcedOptionParam = [
+                    arg.eidpeer, // destination endpoint eid
+                    1, // SEND message type
+                    options,
+                ]
+                await goatOFT.setEnforcedOptions([enforcedOptionParam])
+                await await goatOFT.setPeer(arg.eidpeer, ethers.utils.zeroPad(arg.oftpeer, 32))
             }
 
             console.log('----- Destination Chain -----')
@@ -123,6 +132,13 @@ task('deployOFT', 'Deploy OFT contracts on source/destination chain')
                 )
             }
 
+            const options = Options.newOptions().addExecutorLzReceiveOption(60000, 0).toHex().toString()
+            const enforcedOptionParam = [
+                arg.eidpeer, // destination endpoint eid
+                1, // SEND message type
+                options,
+            ]
+            await oft.setEnforcedOptions([enforcedOptionParam])
             await oft.setPeer(arg.eidpeer, ethers.utils.zeroPad(arg.oftpeer, 32))
 
             console.log('Peer set', arg.eidpeer, arg.oftpeer)
