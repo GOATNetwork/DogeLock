@@ -41,7 +41,7 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
     function initialize(address _owner) external initializer {
         __Ownable_init(_owner);
         maxLockAmount = 20_000_000 * DOGE_DECIMAL;
-        personalMaxLockAmount = 500_000 * DOGE_DECIMAL;
+        personalMaxLockAmount = 50_000 * DOGE_DECIMAL;
         personalMinLockAmount = 50 * DOGE_DECIMAL;
     }
 

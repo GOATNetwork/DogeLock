@@ -90,7 +90,7 @@ const config: HardhatUserConfig = {
         },
         'bsc-mainnet': {
             eid: EndpointId.BSC_V2_MAINNET,
-            url: process.env.RPC_URL_BSC_MAINNET || 'https://bsc.meowrpc.com',
+            url: process.env.RPC_URL_BSC_MAINNET,
             accounts,
             endpoint: '0x1a44076050125825900e736c501f859c50fE728c',
         },

@@ -39,13 +39,17 @@ task('deploy:source', 'deploying on source chain (deploying Lock and DogeForGoat
 
         // deploy DogeForGoat
         const dfgOftLogic = await DogeForGoat.deploy(dogecoin.address, endpoint)
+        await ethers.provider.waitForTransaction(dfgOftLogic.deployTransaction.hash)
         const dfgProxy = await UpgradeableProxy.deploy(dfgOftLogic.address, owner)
+        await ethers.provider.waitForTransaction(dfgProxy.deployTransaction.hash)
         const dfgOft = DogeForGoat.attach(dfgProxy.address)
         await dfgOft.initialize(owner)
 
         // deploy DogeLock
         const dogeLockLogic = await DogeLock.deploy(dogecoin.address, dfgProxy.address)
+        await ethers.provider.waitForTransaction(dogeLockLogic.deployTransaction.hash)
         const lockProxy = await UpgradeableProxy.deploy(dogeLockLogic.address, owner)
+        await ethers.provider.waitForTransaction(lockProxy.deployTransaction.hash)
         const dogeLock = DogeLock.attach(lockProxy.address)
         await dogeLock.initialize(owner)
 
@@ -83,6 +87,7 @@ task('deploy:dest', 'deploying on destination chain (deploying OFT to receive Do
 
         const GoatOFT = await ethers.getContractFactory('GoatOFT')
         const goatOFT = await GoatOFT.deploy('Goat Doge', 'GD', endpoint, owner)
+        await ethers.provider.waitForTransaction(goatOFT.deployTransaction.hash)
 
         if (network.config.configOption != undefined) {
             console.log('   Setting LayerZero config options...')
@@ -111,6 +116,7 @@ task('deploy:dest', 'deploying on destination chain (deploying OFT to receive Do
 
 task('deploy:lock', 'deploying DogeLock on source chain.')
     .addOptionalParam('dogecoin', 'Dogecoin contract of source chain')
+    .addOptionalParam('logic', 'DogeLock logic contract')
     .addOptionalParam('owner', 'contract owner')
     .addOptionalParam('initialvalue', 'The amount dogecoin minted when deployed')
     .setAction(async (arg, { ethers, network }) => {
@@ -134,8 +140,16 @@ task('deploy:lock', 'deploying DogeLock on source chain.')
         const DogeLock = await ethers.getContractFactory('DogeLockUpgradeable')
 
         // deploy DogeLock
-        const dogeLockLogic = await DogeLock.deploy(dogecoin.address, ethers.constants.AddressZero)
-        const lockProxy = await UpgradeableProxy.deploy(dogeLockLogic.address, owner)
+        let logicContract
+        if (arg.logic == undefined) {
+            const dogeLockLogic = await DogeLock.deploy(dogecoin.address, ethers.constants.AddressZero)
+            await ethers.provider.waitForTransaction(dogeLockLogic.deployTransaction.hash)
+            logicContract = dogeLockLogic.address
+        } else {
+            logicContract = arg.logic
+        }
+        const lockProxy = await UpgradeableProxy.deploy(logicContract, owner)
+        await ethers.provider.waitForTransaction(lockProxy.deployTransaction.hash)
         const dogeLock = DogeLock.attach(lockProxy.address)
         await dogeLock.initialize(owner)
 
