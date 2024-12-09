@@ -6,11 +6,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DogeLock
-    network: localhost
+    network: bsc
     source:
-      address: "0x7E7Bb472689876C5A4C3AF0a62C5325470a3472a"
+      address: "0xaAC2155CceA674b0f5b0AAA81D5Ac85C510e9e98"
       abi: DogeLock
-      startBlock: 46141857
+      startBlock: 44713199
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6

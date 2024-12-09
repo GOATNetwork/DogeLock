@@ -20,7 +20,7 @@ npm run deploy-local-subgraph
 
 npx hardhat create-test-data --network localhost
 ```
-
+docker logs -f subgraph-graph-node-1
 ```
 8
 url: 'https://rpc.testnet.goat.network',
