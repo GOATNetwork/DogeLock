@@ -218,6 +218,21 @@ export class DogeLock extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  oft(): Address {
+    let result = super.call("oft", "oft():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_oft(): ethereum.CallResult<Address> {
+    let result = super.tryCall("oft", "oft():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
   owner(): Address {
     let result = super.call("owner", "owner():(address)", []);
 
@@ -315,6 +330,10 @@ export class ConstructorCall__Inputs {
   get _dogeCoin(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
+
+  get _oft(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
 }
 
 export class ConstructorCall__Outputs {
@@ -342,23 +361,19 @@ export class BridgeCall__Inputs {
     this._call = call;
   }
 
-  get _oft(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
   get _amount(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
+    return this._call.inputValues[0].value.toBigInt();
   }
 
   get _sendParam(): BridgeCall_sendParamStruct {
     return changetype<BridgeCall_sendParamStruct>(
-      this._call.inputValues[2].value.toTuple(),
+      this._call.inputValues[1].value.toTuple(),
     );
   }
 
   get _fee(): BridgeCall_feeStruct {
     return changetype<BridgeCall_feeStruct>(
-      this._call.inputValues[3].value.toTuple(),
+      this._call.inputValues[2].value.toTuple(),
     );
   }
 }

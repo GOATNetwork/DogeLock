@@ -5,6 +5,11 @@
         "internalType": "address",
         "name": "_dogeCoin",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_oft",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -99,6 +104,11 @@
       }
     ],
     "name": "OwnableUnauthorizedAccount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "PaymentNotSupported",
     "type": "error"
   },
   {
@@ -283,11 +293,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_oft",
-        "type": "address"
-      },
-      {
         "internalType": "uint256",
         "name": "_amount",
         "type": "uint256"
@@ -404,6 +409,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "oft",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
