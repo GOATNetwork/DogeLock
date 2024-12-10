@@ -68,7 +68,7 @@ describe('Doge For Goat OFT Test', function () {
         // Deploying two instances of GoatOFT contract with different identifiers and linking them to the mock LZEndpoint
         dogeForGoat = await DogeForGoat.deploy(dogecoin.address, mockEndpointV2A.address)
         await dogeForGoat.initialize(ownerA.address)
-        goatOFT = await GoatOFT.deploy('Goat OFT', 'GOFT', mockEndpointV2B.address, ownerB.address)
+        goatOFT = await GoatOFT.deploy(mockEndpointV2B.address, ownerB.address)
 
         // Setting destination endpoints in the LZEndpoint mock for each GoatOFT instance
         await mockEndpointV2A.setDestLzEndpoint(goatOFT.address, mockEndpointV2B.address)

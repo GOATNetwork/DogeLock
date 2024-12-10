@@ -32,7 +32,7 @@ contract DogeForGoatUpgradeable is IDogeForGoat, OFTUpgradeable {
      * @param _owner The owner/delegate of the contract/OFTAdapter.
      */
     function initialize(address _owner) external initializer {
-        __OFT_init("Doge For Goat", "DFG", _owner);
+        __OFT_init("GOAT BSC DOGE", "DOGEB", _owner);
         __Ownable_init(_owner);
     }
 

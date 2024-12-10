@@ -40,8 +40,8 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
      */
     function initialize(address _owner) external initializer {
         __Ownable_init(_owner);
-        maxLockAmount = 20_000_000 * DOGE_DECIMAL;
-        personalMaxLockAmount = 500_000 * DOGE_DECIMAL;
+        maxLockAmount = 5_000_000 * DOGE_DECIMAL;
+        personalMaxLockAmount = 50_000 * DOGE_DECIMAL;
         personalMinLockAmount = 50 * DOGE_DECIMAL;
     }
 
@@ -77,8 +77,8 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
         balances[msg.sender] += _amount;
         totalBalance += _amount;
         require(balances[msg.sender] <= personalMaxLockAmount, ExceededPersonalMax(balances[msg.sender]));
-        dogeCoin.safeTransferFrom(msg.sender, address(this), _amount);
         require(totalBalance <= maxLockAmount, ExceededTotalMax(totalBalance));
+        dogeCoin.safeTransferFrom(msg.sender, address(this), _amount);
         emit Lock(msg.sender, _amount, block.number);
     }
 

@@ -1,3 +1,20 @@
+## Deployed Contracts
+
+### BSC (source chain)
+
+| Contract   | Mainnet Address                            | Testnet Address                            |
+| ---------- | ------------------------------------------ | ------------------------------------------ |
+| Dogecoin   | 0xbA2aE424d960c26247Dd6c32edC70B295c744C43 | 0x9A359f736674913e405Eb64C2048c6293DC97CbF |
+| Lock Logic | 0x1d7e4Df7Ad00e3dbBF444515232E22e5C6D173e8 | 0xed54fcd1313b4dcec4ae7bf4df4142ab6f1f031b |
+| Lock       | 0xaAC2155CceA674b0f5b0AAA81D5Ac85C510e9e98 | 0x4461ccD816E9952Ebd0BaF0661ac4E28de0d5095 |
+| OFT        | 0x0000000000000000000000000000000000000000 | 0x0000000000000000000000000000000000000000 |
+
+### Goat (destination chain)
+
+| Contract | Address |
+| -------- | ------- |
+| OFT      | 0x00    |
+
 ## 1) Setup Project
 
 #### Installing dependencies
@@ -88,19 +105,3 @@ More information about available CLI arguments can be found using the `--help` f
 ```bash
 npx hardhat lz:deploy --help
 ```
-
-## Deployed Contracts
-
-### BSC Testnet (destination chain)
-
-| Contract | Address                                    |
-| -------- | ------------------------------------------ |
-| Dogecoin | 0x9A359f736674913e405Eb64C2048c6293DC97CbF |
-| Lock     | 0x7E7Bb472689876C5A4C3AF0a62C5325470a3472a |
-| OFT      | 0x5dF99c6E2370DC36d12246Cb40F940Ec2b6777b4 |
-
-### Sepolia (source chain)
-
-| Contract | Address                                    |
-| -------- | ------------------------------------------ |
-| OFT      | 0x298b2776D49ffe9756C5BE0377e889928be40a61 |

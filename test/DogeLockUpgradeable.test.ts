@@ -47,11 +47,11 @@ describe('Doge Lock Test', function () {
 
     it('test successfully lock/unlock', async function () {
         // Minting an initial amount of tokens to ownerA's address in the myOFTA contract
-        const initialAmount = ethers.utils.parseUnits('100', 8)
+        const initialAmount = (await dogeLock.personalMinLockAmount()).mul(2)
         await dogecoin.mint(ownerA.address, initialAmount)
 
         // Defining the amount of tokens to send and constructing the parameters for the send operation
-        const tokensToSend = ethers.utils.parseUnits('50', 8)
+        const tokensToSend = await dogeLock.personalMinLockAmount()
 
         await dogecoin.connect(ownerA).approve(dogeLock.address, tokensToSend)
         await dogeLock.connect(ownerA).lock(tokensToSend)
@@ -72,8 +72,8 @@ describe('Doge Lock Test', function () {
 
     it('test lock/unlock revert cases', async function () {
         // Minting an initial amount of tokens to ownerA's address in the myOFTA contract
-        const maxLimit = ethers.utils.parseUnits('500000', 8)
-        const minLimit = ethers.utils.parseUnits('50', 8)
+        const maxLimit = await dogeLock.personalMaxLockAmount()
+        const minLimit = await dogeLock.personalMinLockAmount()
         await dogecoin.mint(ownerA.address, maxLimit.mul(3))
 
         await dogecoin.connect(ownerA).approve(dogeLock.address, maxLimit.mul(3))
@@ -81,7 +81,6 @@ describe('Doge Lock Test', function () {
         await expect(dogeLock.connect(ownerA).lock(minLimit.sub(1))).to.be.revertedWith('BelowMin')
         // too big
         await expect(dogeLock.connect(ownerA).lock(maxLimit.add(1))).to.be.revertedWith('ExceededPersonalMax')
-
         // over total max
         for (let i = 0; i < 40; ++i) {
             const user = await ethers.getImpersonatedSigner(ethers.Wallet.createRandom().address)
@@ -91,8 +90,9 @@ describe('Doge Lock Test', function () {
             })
             await dogecoin.mint(user.address, maxLimit)
             await dogecoin.connect(user).approve(dogeLock.address, maxLimit)
-            await dogeLock.connect(user).lock(maxLimit.sub(ONE_UNIT.mul(2)))
+            await dogeLock.connect(user).lock(maxLimit)
         }
+        await dogeLock.setMax((await dogeLock.totalBalance()).add(minLimit))
         await expect(dogeLock.connect(ownerA).lock(maxLimit)).to.be.revertedWith('ExceededTotalMax')
         // success lock
         await dogeLock.connect(ownerA).lock(minLimit)
