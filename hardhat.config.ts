@@ -1,10 +1,6 @@
-// Get the environment configuration from .env file
-//
-// To make use of automatic environment setup:
-// - Duplicate .env.example file and name it .env
-// - Fill in the environment variables
-import 'dotenv/config'
+import { resolve } from 'path'
 
+import * as dotenv from 'dotenv'
 import 'hardhat-deploy'
 import 'solidity-coverage'
 import 'hardhat-contract-sizer'
@@ -14,6 +10,7 @@ import '@layerzerolabs/toolbox-hardhat'
 import { HardhatUserConfig, HttpNetworkAccountsUserConfig } from 'hardhat/types'
 
 import { EndpointId } from '@layerzerolabs/lz-definitions'
+dotenv.config({ path: resolve(__dirname, '.env') })
 
 import './type-extensions'
 
@@ -21,6 +18,7 @@ import '@typechain/hardhat'
 import './tasks/create-test-data'
 import './tasks/bridge-helper'
 import './tasks/contract-deployer'
+import './tasks/user-operations'
 
 // Set your preferred authentication method
 //
@@ -37,6 +35,9 @@ const accounts: HttpNetworkAccountsUserConfig | undefined = MNEMONIC
       ? [PRIVATE_KEY]
       : undefined
 
+console.log('MNEMONIC', MNEMONIC)
+console.log('PRIVATE_KEY', PRIVATE_KEY)
+console.log('accounts', accounts)
 if (accounts == null) {
     console.warn(
         'Could not find MNEMONIC or PRIVATE_KEY environment variables. It will not be possible to execute transactions in your example.'
@@ -104,6 +105,11 @@ const config: HardhatUserConfig = {
         dev: {
             url: 'http://localhost:8545',
             chainId: 1337,
+        },
+        testnet: {
+            url: 'https://rpc.testnet.goat.network',
+            chainId: 48815,
+            accounts,
         },
     },
     sourcify: {

@@ -19,8 +19,7 @@ dataSources:
         - User
         - LockEvent
         - UnlockEvent
-        - OFTSentEvent
-        - OFTReceivedEvent
+        - BridgeEvent
         - GlobalStat
       abis:
         - name: DogeLock
@@ -30,8 +29,6 @@ dataSources:
           handler: handleLock
         - event: Unlock(address,uint256,uint256)
           handler: handleUnlock
-        - event: OFTSent(indexed bytes32,uint32,indexed address,uint256,uint256)
-          handler: handleOFTSent
-        - event: OFTReceived(indexed bytes32,uint32,indexed address,uint256)
-          handler: handleOFTReceived
+        - event: Bridge(address,uint256,(uint32,bytes32,uint256,uint256,bytes,bytes,bytes))
+          handler: handleBridge
       file: ./src/mapping.ts
