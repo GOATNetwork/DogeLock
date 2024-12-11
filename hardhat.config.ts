@@ -107,10 +107,20 @@ const config: HardhatUserConfig = {
         },
     },
     sourcify: {
-        enabled: false,
+        enabled: true,
     },
     etherscan: {
         apiKey: process.env.API_KEY,
+        customChains: [
+            {
+                network: 'goat-testnet',
+                chainId: 48816,
+                urls: {
+                    apiURL: 'https://explorer.testnet3.goat.network/api',
+                    browserURL: 'https://explorer.testnet3.goat.network',
+                },
+            },
+        ],
     },
     namedAccounts: {
         deployer: {

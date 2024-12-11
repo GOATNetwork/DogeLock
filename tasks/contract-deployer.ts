@@ -86,7 +86,7 @@ task('deploy:dest', 'deploying on destination chain (deploying OFT to receive Do
         }
 
         const GoatOFT = await ethers.getContractFactory('GoatOFT')
-        const goatOFT = await GoatOFT.deploy('Goat Doge', 'GD', endpoint, owner)
+        const goatOFT = await GoatOFT.deploy(endpoint, owner)
         await ethers.provider.waitForTransaction(goatOFT.deployTransaction.hash)
 
         if (network.config.configOption != undefined) {
@@ -115,10 +115,10 @@ task('deploy:dest', 'deploying on destination chain (deploying OFT to receive Do
     })
 
 task('deploy:lock', 'deploying DogeLock on source chain.')
+    .addOptionalParam('oft', 'DogeLock logic contract')
     .addOptionalParam('dogecoin', 'Dogecoin contract of source chain')
     .addOptionalParam('logic', 'DogeLock logic contract')
     .addOptionalParam('owner', 'contract owner')
-    .addOptionalParam('initialvalue', 'The amount dogecoin minted when deployed')
     .setAction(async (arg, { ethers, network }) => {
         const [deployer] = await ethers.getSigners()
         const deployerAddr = await deployer.getAddress()
@@ -136,31 +136,73 @@ task('deploy:lock', 'deploying DogeLock on source chain.')
             dogecoin = await DogecoinMock.attach(arg.dogecoin)
         }
 
-        const UpgradeableProxy = await ethers.getContractFactory('UpgradeableProxy')
         const DogeLock = await ethers.getContractFactory('DogeLockUpgradeable')
 
         // deploy DogeLock
-        let logicContract
+        const oftContract = arg.oft ? arg.oft : ethers.constants.AddressZero
         if (arg.logic == undefined) {
-            const dogeLockLogic = await DogeLock.deploy(dogecoin.address, ethers.constants.AddressZero)
-            await ethers.provider.waitForTransaction(dogeLockLogic.deployTransaction.hash)
-            logicContract = dogeLockLogic.address
+            console.log('Dogecoin: ', dogecoin.address, ', oft: ', oftContract)
+            const dogeLockLogic = await DogeLock.deploy(dogecoin.address, oftContract)
+            console.log('----- DogeLock Logic -----')
+            console.log('Doge Lock logic:', dogeLockLogic.address)
         } else {
-            logicContract = arg.logic
-        }
-        const lockProxy = await UpgradeableProxy.deploy(logicContract, owner)
-        await ethers.provider.waitForTransaction(lockProxy.deployTransaction.hash)
-        const dogeLock = DogeLock.attach(lockProxy.address)
-        await dogeLock.initialize(owner)
+            const logicContract = arg.logic
+            const UpgradeableProxy = await ethers.getContractFactory('UpgradeableProxy')
+            const lockProxy = await UpgradeableProxy.deploy(logicContract, owner)
+            await ethers.provider.waitForTransaction(lockProxy.deployTransaction.hash)
+            const dogeLock = DogeLock.attach(lockProxy.address)
+            await dogeLock.initialize(owner)
 
-        // mint Dogecoin on localhost or testnet
-        if (arg.initialvalue != undefined) {
-            await dogecoin.mint(deployerAddr, BigNumber.from(arg.initialvalue))
+            console.log('----- DogeLock -----')
+            console.log('Doge Lock:', dogeLock.address)
+            console.log('Doge Lock Admin Proxy:', await lockProxy.proxyAdmin())
+        }
+    })
+
+task('deploy:oft', 'deploying DogeForGoatOFT.')
+    .addOptionalParam('owner', 'contract owner')
+    .addOptionalParam('dogecoin', 'Dogecoin contract of source chain')
+    .setAction(async (arg, { ethers, network }) => {
+        const [deployer] = await ethers.getSigners()
+        const deployerAddr = await deployer.getAddress()
+        const owner = arg.owner == undefined ? deployerAddr : arg.owner
+        console.log('network', network.name, (await ethers.provider.getNetwork()).chainId)
+        console.log('deployerAddr :', deployerAddr, ' Balance: ', await ethers.provider.getBalance(deployerAddr))
+        console.log('Contract Owner: ', owner)
+        const eid = network.config.eid
+        let endpoint
+        if (network.config.endpoint == undefined) {
+            const EndpointV2Mock = await ethers.getContractFactory('EndpointV2Mock')
+            const mockEndpointV2A = await EndpointV2Mock.deploy(1)
+            endpoint = mockEndpointV2A.address
+        } else {
+            endpoint = network.config.endpoint
+        }
+        console.log('eid:', eid, ' endpoint:', endpoint)
+
+        const DogecoinMock = await ethers.getContractFactory('DogecoinMock')
+        let dogecoin
+        if (arg.dogecoin == undefined) {
+            dogecoin = await DogecoinMock.deploy()
+            console.log('Deployed Dogecoin: ', dogecoin.address)
+        } else {
+            dogecoin = await DogecoinMock.attach(arg.dogecoin)
         }
 
-        console.log('----- Source Chain -----')
-        console.log('Doge Lock:', dogeLock.address)
-        console.log('Doge Lock Admin Proxy:', await lockProxy.proxyAdmin())
+        const UpgradeableProxy = await ethers.getContractFactory('UpgradeableProxy')
+        const DogeForGoat = await ethers.getContractFactory('DogeForGoatUpgradeable')
+
+        // deploy DogeForGoat
+        const dfgOftLogic = await DogeForGoat.deploy(dogecoin.address, endpoint)
+        await ethers.provider.waitForTransaction(dfgOftLogic.deployTransaction.hash)
+        const dfgProxy = await UpgradeableProxy.deploy(dfgOftLogic.address, owner)
+        await ethers.provider.waitForTransaction(dfgProxy.deployTransaction.hash)
+        const dfgOft = DogeForGoat.attach(dfgProxy.address)
+        await dfgOft.initialize(owner)
+
+        console.log('----- OFT -----')
+        console.log('Doge for Goat:', dfgOft.address)
+        console.log('Doge For Goat Admin Proxy:', await dfgProxy.proxyAdmin())
     })
 
 task('deploy:setup', 'Set Peer and other Layer Zero configurations')
@@ -199,7 +241,7 @@ task('deploy:setup', 'Set Peer and other Layer Zero configurations')
             options,
         ]
         await oft.setEnforcedOptions([enforcedOptionParam])
-        // await oft.setPeer(arg.eidpeer, ethers.utils.zeroPad(arg.oftpeer, 32))
+        await oft.setPeer(arg.eidpeer, ethers.utils.zeroPad(arg.oftpeer, 32))
 
         console.log('Peer set', arg.eidpeer, arg.oftpeer)
     })
