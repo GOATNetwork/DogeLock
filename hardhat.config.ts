@@ -66,11 +66,6 @@ const config: HardhatUserConfig = {
             url: process.env.RPC_URL_SEPOLIA || 'https://rpc.sepolia.org/',
             accounts,
             endpoint: '0x6EDCE65403992e310A62460808c4b910D972f10f',
-            configOption: {
-                sendLib: '0xcc1ae8Cf5D3904Cef3360A9532B477529b177cCE',
-                receiveLib: '0xdAf00F5eE2158dD58E0d3857851c432E34A3A851',
-                executor: '0x718B92b5CB0a5552039B593faF724D182A881eDA',
-            },
         },
         'metis-testnet': {
             eid: EndpointId.METISSEP_V2_TESTNET,
@@ -81,12 +76,24 @@ const config: HardhatUserConfig = {
             url: process.env.RPC_URL_GOAT_TESTNET,
             accounts,
             endpoint: '0x6C7Ab2202C98C4227C5c46f1417D81144DA716Ff',
+            configOption: {
+                sendLib: '0xd682ECF100f6F4284138AA925348633B0611Ae21',
+                receiveLib: '0xcF1B0F4106B0324F96fEfcC31bA9498caa80701C',
+                executor: '0x9dB9Ca3305B48F196D18082e91cB64663b13d014',
+                requiredDVNs: ['0x88b27057a9e00c5f05dda29241027aff63f9e6e0'],
+            },
         },
         'bsc-testnet': {
             eid: EndpointId.BSC_V2_TESTNET,
             url: process.env.RPC_URL_BSC_TESTNET || 'https://bsc-testnet-rpc.publicnode.com',
             accounts,
             endpoint: '0x6EDCE65403992e310A62460808c4b910D972f10f',
+            configOption: {
+                sendLib: '0x55f16c442907e86D764AFdc2a07C2de3BdAc8BB7',
+                receiveLib: '0x188d4bbCeD671A7aA2b5055937F79510A32e9683',
+                executor: '0x31894b190a8bAbd9A067Ce59fde0BfCFD2B18470',
+                requiredDVNs: ['0x0ee552262f7b562efced6dd4a7e2878ab897d405'],
+            },
         },
         'bsc-mainnet': {
             eid: EndpointId.BSC_V2_MAINNET,

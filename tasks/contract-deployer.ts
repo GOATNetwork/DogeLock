@@ -220,6 +220,7 @@ task('deploy:setup', 'Set Peer and other Layer Zero configurations')
         console.log(await oft.name())
 
         if (network.config.configOption != undefined) {
+            console.log(network.config.configOption)
             let endpoint
             if (network.config.endpoint == undefined) {
                 const EndpointV2Mock = await ethers.getContractFactory('EndpointV2Mock')
@@ -230,8 +231,60 @@ task('deploy:setup', 'Set Peer and other Layer Zero configurations')
             }
             const EndpointFactory = await ethers.getContractFactory('EndpointV2Mock')
             const endpointContract = await EndpointFactory.attach(endpoint)
-            await endpointContract.setSendLibrary(oft.address, arg.eidpeer, network.config.configOption.sendLib)
-            await endpointContract.setReceiveLibrary(oft.address, arg.eidpeer, network.config.configOption.receiveLib)
+
+            // await endpointContract.setSendLibrary(oft.address, arg.eidpeer, network.config.configOption.sendLib)
+            // await endpointContract.setReceiveLibrary(
+            //     oft.address,
+            //     arg.eidpeer,
+            //     network.config.configOption.receiveLib,
+            //     0
+            // )
+
+            const ulnConfig = {
+                confirmations: 5, // Example value, replace with actual
+                requiredDVNCount: 2, // Example value, replace with actual
+                optionalDVNCount: 0, // Example value, replace with actual
+                optionalDVNThreshold: 0, // Example value, replace with actual
+                requiredDVNs: network.config.configOption.requiredDVNs, // Replace with actual addresses
+                optionalDVNs: [], // Replace with actual addresses
+            }
+            const executorConfig = {
+                maxMessageSize: 10000, // Example value, replace with actual
+                executorAddress: network.config.configOption.executor, // Replace with the actual executor address
+            }
+
+            // Encode UlnConfig using defaultAbiCoder
+            const configTypeUlnStruct =
+                'tuple(uint64 confirmations, uint8 requiredDVNCount, uint8 optionalDVNCount, uint8 optionalDVNThreshold, address[] requiredDVNs, address[] optionalDVNs)'
+            const encodedUlnConfig = ethers.utils.defaultAbiCoder.encode([configTypeUlnStruct], [ulnConfig])
+            const setConfigParamUln = {
+                eid: arg.eidpeer,
+                configType: 2, // ULN_CONFIG_TYPE
+                config: encodedUlnConfig,
+            }
+
+            // Encode ExecutorConfig using defaultAbiCoder
+            const configTypeExecutorStruct = 'tuple(uint32 maxMessageSize, address executorAddress)'
+            const encodedExecutorConfig = ethers.utils.defaultAbiCoder.encode(
+                [configTypeExecutorStruct],
+                [executorConfig]
+            )
+            const setConfigParamExecutor = {
+                eid: arg.eidpeer,
+                configType: 1, // EXECUTOR_CONFIG_TYPE
+                config: encodedExecutorConfig,
+            }
+            // console.log(setConfigParamExecutor)
+
+            const tx = await endpointContract.setConfig(
+                oft.address,
+                network.config.configOption.sendLib,
+                [setConfigParamExecutor] // Array of SetConfigParam structs
+                // [setConfigParamUln, setConfigParamExecutor] // Array of SetConfigParam structs
+            )
+
+            console.log('Transaction sent:', tx.hash)
+            await ethers.provider.waitForTransaction(tx.hash)
         }
 
         const options = Options.newOptions().addExecutorLzReceiveOption(60000, 0).toHex().toString()
@@ -241,7 +294,81 @@ task('deploy:setup', 'Set Peer and other Layer Zero configurations')
             options,
         ]
         await oft.setEnforcedOptions([enforcedOptionParam])
-        await oft.setPeer(arg.eidpeer, ethers.utils.zeroPad(arg.oftpeer, 32))
+        // await oft.setPeer(arg.eidpeer, ethers.utils.zeroPad(arg.oftpeer, 32))
+        // console.log('Peer set', arg.eidpeer, arg.oftpeer)
+    })
 
-        console.log('Peer set', arg.eidpeer, arg.oftpeer)
+task('deploy:reset', 'Reset Layer Zero configurations')
+    .addParam('oft', 'OFT contract')
+    .addParam('eid', 'Peer eid')
+    .addParam('oftpeer', 'Peer OFT contract')
+    .setAction(async (arg, { ethers, network }) => {
+        const [deployer] = await ethers.getSigners()
+        const deployerAddr = await deployer.getAddress()
+        console.log('network', network.name, (await ethers.provider.getNetwork()).chainId)
+        console.log('deployerAddr :', deployerAddr, ' Balance: ', await ethers.provider.getBalance(deployerAddr))
+
+        const DogeForGoat = await ethers.getContractFactory('DogeForGoatUpgradeable')
+        const oft = await DogeForGoat.attach(arg.oft)
+        console.log(await oft.name())
+        if (network.config.configOption != undefined) {
+            throw new Error('not set')
+        }
+
+        const EndpointFactory = await ethers.getContractFactory('EndpointV2Mock')
+        const endpointContract = await EndpointFactory.attach(network.config.endpoint!)
+
+        // ULN Configuration Reset Params
+        const confirmations = 0
+        const optionalDVNCount = 0
+        const requiredDVNCount = 0
+        const optionalDVNThreshold = 0
+        const requiredDVNs: string[] = []
+        const optionalDVNs: string[] = []
+
+        const ulnConfigData = {
+            confirmations,
+            requiredDVNCount,
+            optionalDVNCount,
+            optionalDVNThreshold,
+            requiredDVNs,
+            optionalDVNs,
+        }
+        const configTypeUlnStruct =
+            'tuple(uint64 confirmations, uint8 requiredDVNCount, uint8 optionalDVNCount, uint8 optionalDVNThreshold, address[] requiredDVNs, address[] optionalDVNs)'
+
+        const ulnConfigEncoded = ethers.utils.defaultAbiCoder.encode([configTypeUlnStruct], [ulnConfigData])
+
+        const resetConfigParamUln = {
+            eid: arg.eid, // Replace with the target chain's endpoint ID
+            configType: 2,
+            config: ulnConfigEncoded,
+        }
+
+        // Executor Configuration Reset Params
+        const maxMessageSize = 0 // Representing no limit on message size
+        const executorAddress = '0x0000000000000000000000000000000000000000' // Representing no specific executor address
+
+        const configTypeExecutorStruct = 'tuple(uint32 maxMessageSize, address executorAddress)'
+        const executorConfigData = {
+            maxMessageSize,
+            executorAddress,
+        }
+
+        const executorConfigEncoded = ethers.utils.defaultAbiCoder.encode(
+            [configTypeExecutorStruct],
+            [executorConfigData]
+        )
+
+        const resetConfigParamExecutor = {
+            eid: arg.eid, // Replace with the target chain's endpoint ID
+            configType: 1,
+            config: executorConfigEncoded,
+        }
+
+        const resetTx = await endpointContract.setConfig(arg.oft, arg.messagelibAddress, [
+            resetConfigParamUln,
+            resetConfigParamExecutor,
+        ])
+        console.log(resetTx)
     })
