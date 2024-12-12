@@ -11,9 +11,9 @@
 
 ### Goat (destination chain)
 
-| Contract | Address |
-| -------- | ------- |
-| OFT      | 0x00    |
+| Contract | Mainnet Address | Testnet Address                            |
+| -------- | --------------- | ------------------------------------------ |
+| OFT      | 0x00            | 0xa0449799bb779CE75FF37d8fd9A486603F24B804 |
 
 ## 1) Setup Project
 
