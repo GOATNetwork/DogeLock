@@ -15,6 +15,14 @@
 | -------- | --------------- | ------------------------------------------ |
 | OFT      | 0x00            | 0xa0449799bb779CE75FF37d8fd9A486603F24B804 |
 
+### BSC (Pre-Environment)
+
+| Contract | Testnet Address                            |
+| -------- | ------------------------------------------ |
+| Dogecoin | 0x9A359f736674913e405Eb64C2048c6293DC97CbF |
+| Lock     | 0x86F7f959F67C02FDE7A4c6B09CE1b7FBFA321d64 |
+| OFT      | 0xF3AdC4889982B2EC208B2BC5A5785Ee43069B56B |
+
 ## 1) Setup Project
 
 #### Installing dependencies
