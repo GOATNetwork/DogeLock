@@ -105,4 +105,22 @@ contract DogeForGoatUpgradeable is IDogeForGoat, OFTUpgradeable {
         emit OFTSent(_msgReceipt.guid, _sendParam.dstEid, msg.sender, amountSentLD, amountReceivedLD);
         emit DepositAndBridge(msg.sender, _dogeAmount);
     }
+
+    /**
+     * @dev Allows the owner to retrieve tokens from the contract.
+     *      If the token address is zero, it transfers the specified amount of native token to the given address.
+     *      Otherwise, it transfers the specified amount of the given ERC20 token to the given address.
+     *      The function ensures that DogeCoin tokens cannot be retrieved.
+     * @param _token The address of the token to retrieve. Use address(0) for native token.
+     * @param _to The address to which the tokens or native token will be sent.
+     * @param _amount The amount of tokens or native token to retrieve.
+     */
+    function retrieveTokens(address _token, address _to, uint256 _amount) external onlyOwner {
+        if (_token == address(0)) {
+            payable(_to).transfer(_amount);
+        } else {
+            require(_token != address(dogeCoin), "Token is DogeCoin");
+            IERC20(_token).safeTransfer(_to, _amount);
+        }
+    }
 }
