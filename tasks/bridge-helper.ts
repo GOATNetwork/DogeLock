@@ -23,7 +23,7 @@ task('bridge:oft', 'bridge dogecoin through OFT')
         const OFT = await ethers.getContractFactory('DogeForGoatUpgradeable')
         const oft = await OFT.attach(arg.oft)
 
-        let sendParam = [
+        const sendParam = [
             eid,
             ethers.utils.zeroPad(receiver, 32),
             BigNumber.from(arg.value),
@@ -35,7 +35,7 @@ task('bridge:oft', 'bridge dogecoin through OFT')
         const [fee] = await oft.quoteSend(sendParam, false)
         console.log('TX fee: ', fee)
         if (arg.execute != undefined) {
-            let tx = await oft.send(sendParam, [fee, 0], deployerAddr, { value: fee })
+            const tx = await oft.send(sendParam, [fee, 0], deployerAddr, { value: fee })
             console.log(tx)
         }
     })
@@ -56,27 +56,18 @@ task('bridge:lock', 'bridge dogecoin through Lock')
         console.log('Token receiver: ', receiver)
         const eid = arg.eid
 
-        const OFT = await ethers.getContractFactory('DogeForGoatUpgradeable')
+        const OFT = await ethers.getContractFactory('DogeAdapterUpgradeable')
         const oft = await OFT.attach(arg.oft)
         const Lock = await ethers.getContractFactory('DogeLockUpgradeable')
         const lock = await Lock.attach(arg.lock)
-        console.log('OFT: ', await oft.name())
 
         const amount = BigNumber.from(arg.value)
-        let sendParam = [
-            eid,
-            ethers.utils.zeroPad(receiver, 32),
-            amount.mul(CONVERSION_MULTIPLIER),
-            amount.mul(CONVERSION_MULTIPLIER),
-            '0x',
-            '0x',
-            '0x',
-        ]
+        const sendParam = [eid, ethers.utils.zeroPad(receiver, 32), amount, amount, '0x', '0x', '0x']
         const [fee] = await oft.quoteSend(sendParam, false)
         console.log('TX fee: ', fee)
 
         if (arg.execute != undefined) {
-            let tx = await lock.bridge(amount, sendParam, [fee, 0], { value: fee })
+            const tx = await lock.bridge(amount, sendParam, [fee, 0], { value: fee })
             console.log(tx)
         }
     })

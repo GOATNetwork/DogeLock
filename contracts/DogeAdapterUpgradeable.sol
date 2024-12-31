@@ -2,10 +2,7 @@
 pragma solidity ^0.8.27;
 
 import { OFTAdapterUpgradeable } from "@layerzerolabs/oft-evm-upgradeable/contracts/oft/OFTAdapterUpgradeable.sol";
-import { SendParam, OFTReceipt, MessagingReceipt, MessagingFee } from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
 import { SafeERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import { IDogeForGoat } from "./interfaces/IDogeForGoat.sol";
-import { IDogeLock } from "./interfaces/IDogeLock.sol";
 
 /**
  * @dev Layer Zero adapter for Dogecoin.
