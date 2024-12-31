@@ -3,9 +3,8 @@ pragma solidity ^0.8.27;
 
 import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { SafeERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import { SendParam, MessagingFee, OFTReceipt } from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
+import { IOFT, SendParam, MessagingFee, OFTReceipt } from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
 import { IDogeLock } from "./interfaces/IDogeLock.sol";
-import { IDogeForGoat } from "./interfaces/IDogeForGoat.sol";
 
 /**
  * @dev Locking and bridging contract for Dogecoin.
@@ -14,7 +13,7 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable dogeCoin;
-    address public immutable oft;
+    address public immutable dogeAdapter;
 
     uint256 constant DOGE_DECIMAL = 100_000_000;
 
@@ -29,9 +28,9 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
      * @dev Constructor for the DogeLockUpgradeable contract.
      * @param _dogeCoin The address of the Dogecoin token.
      */
-    constructor(address _dogeCoin, address _oft) {
+    constructor(address _dogeCoin, address _dogeAdapter) {
         dogeCoin = IERC20(_dogeCoin);
-        oft = _oft;
+        dogeAdapter = _dogeAdapter;
     }
 
     /**
@@ -104,9 +103,10 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
      */
     function bridge(uint256 _amount, SendParam calldata _sendParam, MessagingFee calldata _fee) external payable {
         require(_fee.lzTokenFee == 0, PaymentNotSupported());
-        require(oft != address(0), InvalidAddress());
-        dogeCoin.approve(oft, _amount);
-        (, , _amount) = IDogeForGoat(oft).depositAndSend{ value: msg.value }(_sendParam, _fee, msg.sender);
+        require(dogeAdapter != address(0), InvalidAddress());
+        dogeCoin.approve(dogeAdapter, _amount);
+        (, OFTReceipt memory receipt) = IOFT(dogeAdapter).send{ value: msg.value }(_sendParam, _fee, msg.sender);
+        _amount = receipt.amountSentLD;
         balances[msg.sender] -= _amount;
         totalBalance -= _amount;
         emit Unlock(msg.sender, _amount, block.number);
