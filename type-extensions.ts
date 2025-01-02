@@ -8,6 +8,7 @@ interface ConfigOption {
     sendLib: string
     receiveLib: string
     executor: string
+    requiredDVNs: string[]
 }
 
 declare module 'hardhat/types/config' {

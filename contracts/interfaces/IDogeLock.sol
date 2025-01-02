@@ -58,9 +58,8 @@ interface IDogeLock {
 
     /**
      * @dev Bridge locked dogecoin.
-     * @param _amount The amount the user wishes to bridge.
      * @param _sendParam The parameters for the send operation.
      * @param _fee The calculated fee for the send() operation.
      */
-    function bridge(uint256 _amount, SendParam calldata _sendParam, MessagingFee calldata _fee) external payable;
+    function bridge(SendParam calldata _sendParam, MessagingFee calldata _fee) external payable;
 }

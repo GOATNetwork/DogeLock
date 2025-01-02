@@ -5,15 +5,23 @@
 | Contract   | Mainnet Address                            | Testnet Address                            |
 | ---------- | ------------------------------------------ | ------------------------------------------ |
 | Dogecoin   | 0xbA2aE424d960c26247Dd6c32edC70B295c744C43 | 0x9A359f736674913e405Eb64C2048c6293DC97CbF |
-| Lock Logic | 0x1d7e4Df7Ad00e3dbBF444515232E22e5C6D173e8 | 0xed54fcd1313b4dcec4ae7bf4df4142ab6f1f031b |
+| Lock Logic | 0x1d7e4Df7Ad00e3dbBF444515232E22e5C6D173e8 | 0x2d3B6b33E1cF574AB0d007A8154c8f97aa528795 |
 | Lock       | 0xaAC2155CceA674b0f5b0AAA81D5Ac85C510e9e98 | 0x4461ccD816E9952Ebd0BaF0661ac4E28de0d5095 |
-| OFT        | 0x0000000000000000000000000000000000000000 | 0x0000000000000000000000000000000000000000 |
+| Adapter    | 0x0000000000000000000000000000000000000000 | 0xa1952fFa805b9F2b711b61f005C6e56054cCA016 |
 
 ### Goat (destination chain)
 
-| Contract | Address |
-| -------- | ------- |
-| OFT      | 0x00    |
+| Contract | Mainnet Address | Testnet Address                            |
+| -------- | --------------- | ------------------------------------------ |
+| OFT      | 0x00            | 0xa0449799bb779CE75FF37d8fd9A486603F24B804 |
+
+### BSC (Pre-Environment)
+
+| Contract | Testnet Address                            |
+| -------- | ------------------------------------------ |
+| Dogecoin | 0x9A359f736674913e405Eb64C2048c6293DC97CbF |
+| Lock     | 0x86F7f959F67C02FDE7A4c6B09CE1b7FBFA321d64 |
+| OFT      | 0xF3AdC4889982B2EC208B2BC5A5785Ee43069B56B |
 
 ## 1) Setup Project
 

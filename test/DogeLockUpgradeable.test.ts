@@ -2,10 +2,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect, use } from 'chai'
 import { solidity } from 'ethereum-waffle'
 import { BigNumber, Contract, ContractFactory } from 'ethers'
-import { deployments, ethers } from 'hardhat'
-import { time } from '@nomicfoundation/hardhat-network-helpers'
-
-import { Options } from '@layerzerolabs/lz-v2-utilities'
+import { ethers } from 'hardhat'
 
 use(solidity)
 

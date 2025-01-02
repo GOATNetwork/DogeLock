@@ -26,3 +26,5 @@ pnpm-error.log
 
 # remixd
 .deps
+
+flatten
