@@ -9,7 +9,7 @@ import { Options } from '@layerzerolabs/lz-v2-utilities'
 
 use(solidity)
 
-describe('Doge For Goat OFT Test', function () {
+describe('Doge Adapter Test', function () {
     const ONE_UNIT = ethers.utils.parseEther('1')
 
     // Constant representing a mock Endpoint ID for testing purposes
@@ -174,7 +174,7 @@ describe('Doge For Goat OFT Test', function () {
         // Approving the native fee to be spent by the myOFTA contract
         await dogecoin.connect(ownerA).approve(dogeLock.address, tokensToSendLD)
         await dogeLock.connect(ownerA).lock(tokensToSendLD)
-        await dogeLock.connect(ownerA).bridge(tokensToSendLD, sendParam, [nativeFee, 0], { value: nativeFee })
+        await dogeLock.connect(ownerA).bridge(sendParam, [nativeFee, 0], { value: nativeFee })
 
         // Fetching the final token balances of ownerA and ownerB
         const finalBalanceA = await dogecoin.balanceOf(ownerA.address)

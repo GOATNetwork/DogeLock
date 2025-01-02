@@ -97,19 +97,19 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
 
     /**
      * @dev Bridge locked dogecoin.
-     * @param _amount The amount the user wishes to bridge.
      * @param _sendParam The parameters for the send operation.
      * @param _fee The calculated fee for the send() operation.
      */
-    function bridge(uint256 _amount, SendParam calldata _sendParam, MessagingFee calldata _fee) external payable {
+    function bridge(SendParam calldata _sendParam, MessagingFee calldata _fee) external payable {
         require(_fee.lzTokenFee == 0, PaymentNotSupported());
         require(dogeAdapter != address(0), InvalidAddress());
-        dogeCoin.approve(dogeAdapter, _amount);
+        uint256 amount = _sendParam.amountLD;
+        dogeCoin.approve(dogeAdapter, amount);
         (, OFTReceipt memory receipt) = IOFT(dogeAdapter).send{ value: msg.value }(_sendParam, _fee, msg.sender);
-        _amount = receipt.amountSentLD;
-        balances[msg.sender] -= _amount;
-        totalBalance -= _amount;
-        emit Unlock(msg.sender, _amount, block.number);
-        emit Bridge(msg.sender, _amount, _sendParam);
+        amount = receipt.amountSentLD;
+        balances[msg.sender] -= amount;
+        totalBalance -= amount;
+        emit Unlock(msg.sender, amount, block.number);
+        emit Bridge(msg.sender, amount, _sendParam);
     }
 }

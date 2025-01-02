@@ -20,7 +20,7 @@ task('bridge:oft', 'bridge dogecoin through OFT')
 
         const eid = arg.eid
 
-        const OFT = await ethers.getContractFactory('DogeForGoatUpgradeable')
+        const OFT = await ethers.getContractFactory('GoatOFT')
         const oft = await OFT.attach(arg.oft)
 
         const sendParam = [

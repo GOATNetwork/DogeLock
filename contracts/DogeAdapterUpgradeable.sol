@@ -10,7 +10,7 @@ import { SafeERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/utils/Saf
 contract DogeAdapterUpgradeable is OFTAdapterUpgradeable {
     using SafeERC20 for IERC20;
 
-    IERC20 public immutable dogeCoin;
+    address public immutable dogeCoin;
 
     /**
      * @dev Constructor for the DogeLockUpgradeable contract.
@@ -18,7 +18,7 @@ contract DogeAdapterUpgradeable is OFTAdapterUpgradeable {
      * @param _lzEndpoint The LayerZero endpoint address.
      */
     constructor(address _dogeCoin, address _lzEndpoint) OFTAdapterUpgradeable(_dogeCoin, _lzEndpoint) {
-        dogeCoin = IERC20(_dogeCoin);
+        dogeCoin = _dogeCoin;
     }
 
     /**
@@ -52,7 +52,7 @@ contract DogeAdapterUpgradeable is OFTAdapterUpgradeable {
         if (_token == address(0)) {
             payable(_to).transfer(_amount);
         } else {
-            require(_token != address(dogeCoin), "Token is DogeCoin");
+            require(_token != dogeCoin, "Token is DogeCoin");
             IERC20(_token).safeTransfer(_to, _amount);
         }
     }
