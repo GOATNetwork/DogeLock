@@ -3,15 +3,12 @@ import { expect, use } from 'chai'
 import { solidity } from 'ethereum-waffle'
 import { BigNumber, Contract, ContractFactory } from 'ethers'
 import { deployments, ethers } from 'hardhat'
-import { time } from '@nomicfoundation/hardhat-network-helpers'
 
 import { Options } from '@layerzerolabs/lz-v2-utilities'
 
 use(solidity)
 
 describe('Doge Adapter Test', function () {
-    const ONE_UNIT = ethers.utils.parseEther('1')
-
     // Constant representing a mock Endpoint ID for testing purposes
     const eidA = 1
     const eidB = 2

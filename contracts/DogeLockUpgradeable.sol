@@ -96,7 +96,7 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
     }
 
     /**
-     * @dev Bridge locked dogecoin.
+     * @dev Bridge locked Dogecoin through Adapter.
      * @param _sendParam The parameters for the send operation.
      * @param _fee The calculated fee for the send() operation.
      */
