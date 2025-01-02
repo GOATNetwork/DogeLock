@@ -104,6 +104,8 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
         require(_fee.lzTokenFee == 0, PaymentNotSupported());
         require(dogeAdapter != address(0), InvalidAddress());
         uint256 amount = _sendParam.amountLD;
+        require(amount <= balances[msg.sender], ExceededBalance(balances[msg.sender]));
+        require(amount <= totalBalance, ExceededTotalBalance(totalBalance));
         dogeCoin.approve(dogeAdapter, amount);
         (, OFTReceipt memory receipt) = IOFT(dogeAdapter).send{ value: msg.value }(_sendParam, _fee, msg.sender);
         amount = receipt.amountSentLD;
