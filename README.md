@@ -2,7 +2,7 @@
 
 ### BSC (source chain)
 
-| Contract   | Mainnet Address                            | Testnet Address                            |
+| Contract   | Mainnet Address (40102)                    | Testnet Address (40356)                    |
 | ---------- | ------------------------------------------ | ------------------------------------------ |
 | Dogecoin   | 0xbA2aE424d960c26247Dd6c32edC70B295c744C43 | 0x9A359f736674913e405Eb64C2048c6293DC97CbF |
 | Lock Logic | 0x1d7e4Df7Ad00e3dbBF444515232E22e5C6D173e8 | 0x2d3B6b33E1cF574AB0d007A8154c8f97aa528795 |
