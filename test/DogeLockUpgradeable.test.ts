@@ -38,7 +38,7 @@ describe('Doge Lock Test', function () {
     beforeEach(async function () {
         dogecoin = await DogecoinMock.deploy()
 
-        dogeLock = await DogeLock.deploy(dogecoin.address, dogecoin.address)
+        dogeLock = await DogeLock.deploy(dogecoin.address, dogecoin.address) // arbitrary non-zero address for adapter
         await dogeLock.initialize(ownerA.address)
     })
 
