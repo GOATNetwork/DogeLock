@@ -30,6 +30,7 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
      */
     constructor(address _dogeCoin, address _dogeAdapter) {
         dogeCoin = IERC20(_dogeCoin);
+        require(_dogeAdapter != address(0), InvalidAddress());
         dogeAdapter = _dogeAdapter;
     }
 
@@ -51,6 +52,7 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
     function setMax(uint256 _amount) external onlyOwner {
         require(_amount >= totalBalance, InvalidAmount());
         maxLockAmount = _amount;
+        emit MaxSet(_amount);
     }
 
     /**
@@ -62,6 +64,7 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
         require(_max > _min, InvalidAmount());
         personalMaxLockAmount = _max;
         personalMinLockAmount = _min;
+        emit PersonalLimitSet(_max, _min);
     }
 
     /**
@@ -69,7 +72,8 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
      * @param _amount The amount the user wishes to lock.
      * @dev The amount and lock time is recorded for points calculation on Goat Network.
      * @dev The user must approve the amount before calling this function.
-     * @dev The final amount cannot be less than the personal min or more than personal/total max.
+     * @dev The amount cannot be less than the personal min.
+     * @dev The final user/total balance cannot exceed the personal/total max.
      */
     function lock(uint256 _amount) external {
         require(_amount >= personalMinLockAmount, BelowMin());
@@ -88,11 +92,17 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
      */
     function unlock(uint256 _amount) external {
         require(_amount <= balances[msg.sender], ExceededBalance(balances[msg.sender]));
-        require(_amount <= totalBalance, ExceededTotalBalance(totalBalance));
         balances[msg.sender] -= _amount;
         totalBalance -= _amount;
         dogeCoin.safeTransfer(msg.sender, _amount);
         emit Unlock(msg.sender, _amount, block.number);
+    }
+
+    /**
+     * @dev Approve the maximum amount of Dogecoin to the Adapter.
+     */
+    function approveMax() external {
+        dogeCoin.approve(dogeAdapter, type(uint256).max);
     }
 
     /**
@@ -102,11 +112,8 @@ contract DogeLockUpgradeable is IDogeLock, OwnableUpgradeable {
      */
     function bridge(SendParam calldata _sendParam, MessagingFee calldata _fee) external payable {
         require(_fee.lzTokenFee == 0, PaymentNotSupported());
-        require(dogeAdapter != address(0), InvalidAddress());
         uint256 amount = _sendParam.amountLD;
         require(amount <= balances[msg.sender], ExceededBalance(balances[msg.sender]));
-        require(amount <= totalBalance, ExceededTotalBalance(totalBalance));
-        dogeCoin.approve(dogeAdapter, amount);
         (, OFTReceipt memory receipt) = IOFT(dogeAdapter).send{ value: msg.value }(_sendParam, _fee, msg.sender);
         amount = receipt.amountSentLD;
         balances[msg.sender] -= amount;

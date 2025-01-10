@@ -5,19 +5,19 @@ import { SendParam, MessagingFee } from "@layerzerolabs/oft-evm/contracts/interf
 
 interface IDogeLock {
     // Events
-    event Lock(address user, uint256 amount, uint256 blockNumber);
-    event Unlock(address user, uint256 amount, uint256 blockNumber);
-    event Bridge(address user, uint256 amount, SendParam sendParam);
+    event Lock(address indexed user, uint256 amount, uint256 blockNumber);
+    event Unlock(address indexed user, uint256 amount, uint256 blockNumber);
+    event Bridge(address indexed user, uint256 amount, SendParam sendParam);
+    event MaxSet(uint256 amount);
+    event PersonalLimitSet(uint256 max, uint256 min);
 
     // Custom errors
     error InvalidAddress();
     error InvalidAmount();
     error ExceededBalance(uint256);
-    error ExceededTotalBalance(uint256);
     error ExceededPersonalMax(uint256);
     error ExceededTotalMax(uint256);
     error BelowMin();
-    error TimeNotReached();
     error PaymentNotSupported();
 
     // public variables

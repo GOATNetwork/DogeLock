@@ -1,7 +1,7 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect, use } from 'chai'
 import { solidity } from 'ethereum-waffle'
-import { BigNumber, Contract, ContractFactory } from 'ethers'
+import { BigNumber, Contract, ContractFactory, Wallet } from 'ethers'
 import { ethers } from 'hardhat'
 
 use(solidity)
@@ -37,8 +37,10 @@ describe('Doge Lock Test', function () {
     // beforeEach hook for setup that runs before each test in the block
     beforeEach(async function () {
         dogecoin = await DogecoinMock.deploy()
+        // arbitrary non-zero address for adapter
+        const adaptAddress = Wallet.createRandom().address
 
-        dogeLock = await DogeLock.deploy(dogecoin.address, ethers.constants.AddressZero)
+        dogeLock = await DogeLock.deploy(dogecoin.address, adaptAddress)
         await dogeLock.initialize(ownerA.address)
     })
 

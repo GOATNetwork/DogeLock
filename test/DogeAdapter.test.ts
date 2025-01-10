@@ -147,6 +147,7 @@ describe('Doge Adapter Test', function () {
         const DogeLock = await ethers.getContractFactory('DogeLockUpgradeable')
         const dogeLock = await DogeLock.deploy(dogecoin.address, dogeForGoat.address)
         await dogeLock.initialize(ownerA.address)
+        await dogeLock.approveMax()
         // Minting an initial amount of tokens to ownerA's address in the myOFTA contract
         const initialAmountLD = ethers.utils.parseUnits('100', 8)
         await dogecoin.mint(ownerA.address, initialAmountLD)
