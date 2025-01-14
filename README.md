@@ -1,3 +1,7 @@
+## Audit Report
+
+You can find the full audit report [here](https://hackmd.io/@offbeatsecurity/dogelock-review).
+
 ## Deployed Contracts
 
 ### BSC (source chain)
