@@ -89,18 +89,6 @@ task('deploy:dest', 'deploying on destination chain (deploying OFT to receive Do
         const goatOFT = await GoatOFT.deploy(endpoint, owner)
         await ethers.provider.waitForTransaction(goatOFT.deployTransaction.hash)
 
-        if (network.config.configOption != undefined) {
-            console.log('   Setting LayerZero config options...')
-            const EndpointFactory = await ethers.getContractFactory('EndpointV2Mock')
-            const endpointContract = await EndpointFactory.attach(endpoint)
-            await endpointContract.setSendLibrary(goatOFT.address, arg.peereid, network.config.configOption.sendLib)
-            await endpointContract.setReceiveLibrary(
-                goatOFT.address,
-                arg.peereid,
-                network.config.configOption.receiveLib
-            )
-        }
-
         const options = Options.newOptions().addExecutorLzReceiveOption(60000, 0).toHex().toString()
         const enforcedOptionParam = [
             arg.peereid, // destination endpoint eid
@@ -108,7 +96,7 @@ task('deploy:dest', 'deploying on destination chain (deploying OFT to receive Do
             options,
         ]
         await goatOFT.setEnforcedOptions([enforcedOptionParam])
-        await await goatOFT.setPeer(arg.peereid, ethers.utils.zeroPad(arg.oftpeer, 32))
+        await goatOFT.setPeer(arg.peereid, ethers.utils.zeroPad(arg.oftpeer, 32))
 
         console.log('----- Destination Chain -----')
         console.log('GoatOFT:', goatOFT.address)
@@ -211,9 +199,10 @@ task('deploy:adapter', 'deploying DogeAdapter.')
 task('deploy:setup', 'Set Peer and other Layer Zero configurations')
     .addParam('adapter', 'OFT contract')
     .addParam('peereid', 'Peer eid')
-    .addParam('peeraddr', 'Peer OFT contract')
     .addOptionalParam('setconfig', 'Set config options')
     .addOptionalParam('setenforced', 'Set config options')
+    .addOptionalParam('setpeer', 'Set config options')
+    .addOptionalParam('peeraddr', 'Peer OFT contract')
     .setAction(async (arg, { ethers, network }) => {
         const [deployer] = await ethers.getSigners()
         const deployerAddr = await deployer.getAddress()
@@ -236,17 +225,18 @@ task('deploy:setup', 'Set Peer and other Layer Zero configurations')
             const EndpointFactory = await ethers.getContractFactory('EndpointV2Mock')
             const endpointContract = await EndpointFactory.attach(endpoint)
 
-            await endpointContract.setSendLibrary(adapter.address, arg.peereid, network.config.configOption.sendLib)
-            await endpointContract.setReceiveLibrary(
-                adapter.address,
-                arg.peereid,
-                network.config.configOption.receiveLib,
-                0
-            )
+            // await endpointContract.setSendLibrary(adapter.address, arg.peereid, network.config.configOption.sendLib)
+            // let tx = await endpointContract.setReceiveLibrary(
+            //     adapter.address,
+            //     arg.peereid,
+            //     network.config.configOption.receiveLib,
+            //     0
+            // )
+            // await ethers.provider.waitForTransaction(tx.hash)
 
             const ulnConfig = {
-                confirmations: 5, // Example value, replace with actual
-                requiredDVNCount: 2, // Example value, replace with actual
+                confirmations: 20, // Example value, replace with actual
+                requiredDVNCount: 1, // Example value, replace with actual
                 optionalDVNCount: 0, // Example value, replace with actual
                 optionalDVNThreshold: 0, // Example value, replace with actual
                 requiredDVNs: network.config.configOption.requiredDVNs, // Replace with actual addresses
@@ -282,13 +272,14 @@ task('deploy:setup', 'Set Peer and other Layer Zero configurations')
 
             const tx = await endpointContract.setConfig(
                 adapter.address,
-                network.config.configOption.sendLib,
+                network.config.configOption.receiveLib,
+                [setConfigParamUln]
                 // [setConfigParamExecutor] // Array of SetConfigParam structs
-                [setConfigParamUln, setConfigParamExecutor] // Array of SetConfigParam structs
+                // [setConfigParamUln, setConfigParamExecutor] // Array of SetConfigParam structs
             )
 
-            console.log('Transaction sent:', tx.hash)
             await ethers.provider.waitForTransaction(tx.hash)
+            console.log('Config transaction sent:', tx.hash)
         }
 
         if (arg.setenforced) {
@@ -298,11 +289,14 @@ task('deploy:setup', 'Set Peer and other Layer Zero configurations')
                 1, // SEND message type
                 options,
             ]
-            await adapter.setEnforcedOptions([enforcedOptionParam])
+            const tx = await adapter.setEnforcedOptions([enforcedOptionParam])
+            console.log('Enforce transaction sent:', tx.hash)
         }
 
-        await adapter.setPeer(arg.peereid, ethers.utils.zeroPad(arg.peeraddr, 32))
-        console.log('Peer set', arg.peereid, arg.peeraddr)
+        if (arg.setpeer && arg.peeraddr) {
+            const tx = await adapter.setPeer(arg.peereid, ethers.utils.zeroPad(arg.peeraddr, 32))
+            console.log('Peer set', arg.peereid, arg.peeraddr, tx.hash)
+        }
     })
 
 task('deploy:reset', 'Reset Layer Zero configurations')

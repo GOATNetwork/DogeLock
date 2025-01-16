@@ -72,6 +72,17 @@ const config: HardhatUserConfig = {
             url: 'https://sepolia.metisdevops.link',
             accounts,
         },
+        'goat-mainnet': {
+            url: process.env.RPC_URL_GOAT_MAINNET,
+            accounts,
+            endpoint: '0x6F475642a6e85809B1c36Fa62763669b1b48DD5B',
+            configOption: {
+                sendLib: '0xC39161c743D0307EB9BCc9FEF03eeb9Dc4802de7',
+                receiveLib: '0xe1844c5D63a9543023008D332Bd3d2e6f1FE1043',
+                executor: '0x4208D6E27538189bB48E603D6123A94b8Abe0A0b',
+                requiredDVNs: ['0x282b3386571f7f794450d5789911a9804fa346b4'],
+            },
+        },
         'goat-testnet': {
             url: process.env.RPC_URL_GOAT_TESTNET,
             accounts,
@@ -81,6 +92,18 @@ const config: HardhatUserConfig = {
                 receiveLib: '0xcF1B0F4106B0324F96fEfcC31bA9498caa80701C',
                 executor: '0x9dB9Ca3305B48F196D18082e91cB64663b13d014',
                 requiredDVNs: ['0x88b27057a9e00c5f05dda29241027aff63f9e6e0'],
+            },
+        },
+        'bsc-mainnet': {
+            eid: EndpointId.BSC_V2_MAINNET,
+            url: process.env.RPC_URL_BSC_MAINNET,
+            accounts,
+            endpoint: '0x1a44076050125825900e736c501f859c50fE728c',
+            configOption: {
+                sendLib: '0x9F8C645f2D0b2159767Bd6E0839DE4BE49e823DE',
+                receiveLib: '0xB217266c3A98C8B2709Ee26836C98cf12f6cCEC1',
+                executor: '0x3ebD570ed38B1b3b4BC886999fcF507e9D584859',
+                requiredDVNs: ['0xfd6865c841c2d64565562fcc7e05e619a30615f0'],
             },
         },
         'bsc-testnet': {
@@ -94,12 +117,6 @@ const config: HardhatUserConfig = {
                 executor: '0x31894b190a8bAbd9A067Ce59fde0BfCFD2B18470',
                 requiredDVNs: ['0x0ee552262f7b562efced6dd4a7e2878ab897d405'],
             },
-        },
-        'bsc-mainnet': {
-            eid: EndpointId.BSC_V2_MAINNET,
-            url: process.env.RPC_URL_BSC_MAINNET,
-            accounts,
-            endpoint: '0x1a44076050125825900e736c501f859c50fE728c',
         },
         hardhat: {
             // Need this for testing because TestHelperOz5.sol is exceeding the compiled contract size limit
