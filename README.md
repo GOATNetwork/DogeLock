@@ -21,11 +21,11 @@ You can find the full audit report [here](https://hackmd.io/@offbeatsecurity/dog
 
 ### BSC (Pre-Environment)
 
-| Contract | Testnet Address                            |
-| -------- | ------------------------------------------ |
-| Dogecoin | 0x9A359f736674913e405Eb64C2048c6293DC97CbF |
-| Lock     | 0x86F7f959F67C02FDE7A4c6B09CE1b7FBFA321d64 |
-| OFT      | 0xF3AdC4889982B2EC208B2BC5A5785Ee43069B56B |
+| Contract | Mainnet Address (40102)                    | Testnet Address (40356)                    |
+| -------- | ------------------------------------------ | ------------------------------------------ |
+| Dogecoin | 0x08029B8D369BdD14710725291F1370ff7Cd7618d | 0x9A359f736674913e405Eb64C2048c6293DC97CbF |
+| Lock     | 0x00                                       | 0x86F7f959F67C02FDE7A4c6B09CE1b7FBFA321d64 |
+| Adapter  | 0x457b2f4fa620d2ed47CB9F48B1F818e9f116EaA2 | 0xF3AdC4889982B2EC208B2BC5A5785Ee43069B56B |
 
 ## 1) Setup Project
 

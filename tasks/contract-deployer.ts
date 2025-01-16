@@ -160,7 +160,7 @@ task('deploy:lock', 'deploying DogeLock on source chain.')
         }
     })
 
-task('deploy:adapter', 'deploying DogeForGoatOFT.')
+task('deploy:adapter', 'deploying DogeAdapter.')
     .addOptionalParam('owner', 'contract owner')
     .addOptionalParam('dogecoin', 'Dogecoin contract of source chain')
     .setAction(async (arg, { ethers, network }) => {
