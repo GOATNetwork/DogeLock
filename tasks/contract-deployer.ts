@@ -66,8 +66,8 @@ task('deploy:source', 'deploying on source chain (deploying Lock and DogeForGoat
     })
 
 task('deploy:dest', 'deploying on destination chain (deploying OFT to receive DogeForGoat)')
-    .addParam('peereid', 'Peer eid')
-    .addParam('oftpeer', 'Peer OFT contract')
+    // .addParam('peereid', 'Peer eid')
+    // .addParam('deploy:dest', 'Peer OFT contract')
     .addOptionalParam('owner', 'contract owner')
     .setAction(async (arg, { ethers, network }) => {
         const [deployer] = await ethers.getSigners()
@@ -89,14 +89,14 @@ task('deploy:dest', 'deploying on destination chain (deploying OFT to receive Do
         const goatOFT = await GoatOFT.deploy(endpoint, owner)
         await ethers.provider.waitForTransaction(goatOFT.deployTransaction.hash)
 
-        const options = Options.newOptions().addExecutorLzReceiveOption(60000, 0).toHex().toString()
-        const enforcedOptionParam = [
-            arg.peereid, // destination endpoint eid
-            1, // SEND message type
-            options,
-        ]
-        await goatOFT.setEnforcedOptions([enforcedOptionParam])
-        await goatOFT.setPeer(arg.peereid, ethers.utils.zeroPad(arg.oftpeer, 32))
+        // const options = Options.newOptions().addExecutorLzReceiveOption(60000, 0).toHex().toString()
+        // const enforcedOptionParam = [
+        //     arg.peereid, // destination endpoint eid
+        //     1, // SEND message type
+        //     options,
+        // ]
+        // await goatOFT.setEnforcedOptions([enforcedOptionParam])
+        // await goatOFT.setPeer(arg.peereid, ethers.utils.zeroPad(arg.oftpeer, 32))
 
         console.log('----- Destination Chain -----')
         console.log('GoatOFT:', goatOFT.address)
@@ -192,8 +192,8 @@ task('deploy:adapter', 'deploying DogeAdapter.')
         await dogeAdapter.initialize(owner)
 
         console.log('----- Adapter -----')
-        console.log('Doge for Goat:', dogeAdapter.address)
-        console.log('Doge For Goat Admin Proxy:', await dogeAdapterProxy.proxyAdmin())
+        console.log('Adapter:', dogeAdapter.address)
+        console.log('Adapter Admin Proxy:', await dogeAdapterProxy.proxyAdmin())
     })
 
 task('deploy:setup', 'Set Peer and other Layer Zero configurations')
@@ -225,15 +225,19 @@ task('deploy:setup', 'Set Peer and other Layer Zero configurations')
             const EndpointFactory = await ethers.getContractFactory('EndpointV2Mock')
             const endpointContract = await EndpointFactory.attach(endpoint)
 
-            // await endpointContract.setSendLibrary(adapter.address, arg.peereid, network.config.configOption.sendLib)
-            // let tx = await endpointContract.setReceiveLibrary(
-            //     adapter.address,
-            //     arg.peereid,
-            //     network.config.configOption.receiveLib,
-            //     0
-            // )
-            // await ethers.provider.waitForTransaction(tx.hash)
+            // set send/receive lib
+            console.log('Setting send/receive lib')
+            await endpointContract.setSendLibrary(adapter.address, arg.peereid, network.config.configOption.sendLib)
+            let tx = await endpointContract.setReceiveLibrary(
+                adapter.address,
+                arg.peereid,
+                network.config.configOption.receiveLib,
+                0
+            )
+            await ethers.provider.waitForTransaction(tx.hash)
 
+            // set config
+            console.log('Setting config')
             const ulnConfig = {
                 confirmations: 20, // Example value, replace with actual
                 requiredDVNCount: 1, // Example value, replace with actual
@@ -270,14 +274,18 @@ task('deploy:setup', 'Set Peer and other Layer Zero configurations')
             }
             // console.log(setConfigParamExecutor)
 
-            const tx = await endpointContract.setConfig(
+            tx = await endpointContract.setConfig(
                 adapter.address,
-                network.config.configOption.receiveLib,
-                [setConfigParamUln]
-                // [setConfigParamExecutor] // Array of SetConfigParam structs
-                // [setConfigParamUln, setConfigParamExecutor] // Array of SetConfigParam structs
+                network.config.configOption.sendLib,
+                // [setConfigParamUln]
+                // [setConfigParamExecutor]
+                [setConfigParamUln, setConfigParamExecutor] // Array of SetConfigParam structs
             )
+            await ethers.provider.waitForTransaction(tx.hash)
 
+            tx = await endpointContract.setConfig(adapter.address, network.config.configOption.receiveLib, [
+                setConfigParamUln,
+            ])
             await ethers.provider.waitForTransaction(tx.hash)
             console.log('Config transaction sent:', tx.hash)
         }
