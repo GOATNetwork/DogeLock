@@ -11,7 +11,9 @@ import { OFT } from "@layerzerolabs/oft-evm/contracts/OFT.sol";
  */
 contract GoatOFT is OFT {
     constructor(
+        string memory _name,
+        string memory _symbol,
         address _lzEndpoint,
         address _delegate
-    ) OFT("GOAT BSC DOGE", "DOGEB", _lzEndpoint, _delegate) Ownable(_delegate) {}
+    ) OFT(_name, _symbol, _lzEndpoint, _delegate) Ownable(_delegate) {}
 }

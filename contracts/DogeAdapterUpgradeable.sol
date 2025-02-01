@@ -5,21 +5,17 @@ import { OFTAdapterUpgradeable } from "@layerzerolabs/oft-evm-upgradeable/contra
 import { SafeERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
- * @dev Layer Zero adapter for Dogecoin.
+ * @dev Layer Zero adapter for ERC20 token.
  */
 contract DogeAdapterUpgradeable is OFTAdapterUpgradeable {
     using SafeERC20 for IERC20;
 
-    address public immutable dogeCoin;
-
     /**
      * @dev Constructor for the DogeLockUpgradeable contract.
-     * @param _dogeCoin The address of the Dogecoin token.
+     * @param _innerToken The address of the inner ERC20 token.
      * @param _lzEndpoint The LayerZero endpoint address.
      */
-    constructor(address _dogeCoin, address _lzEndpoint) OFTAdapterUpgradeable(_dogeCoin, _lzEndpoint) {
-        dogeCoin = _dogeCoin;
-    }
+    constructor(address _innerToken, address _lzEndpoint) OFTAdapterUpgradeable(_innerToken, _lzEndpoint) {}
 
     /**
      * @dev Initializes the DogeLockUpgradeable with the provided owner and locking limits.
@@ -52,7 +48,7 @@ contract DogeAdapterUpgradeable is OFTAdapterUpgradeable {
         if (_token == address(0)) {
             payable(_to).transfer(_amount);
         } else {
-            require(_token != dogeCoin, "Token is DogeCoin");
+            require(_token != address(innerToken), "Token disallowed");
             IERC20(_token).safeTransfer(_to, _amount);
         }
     }
