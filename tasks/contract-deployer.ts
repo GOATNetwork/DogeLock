@@ -66,8 +66,8 @@ task('deploy:source', 'deploying on source chain (deploying Lock and DogeForGoat
     })
 
 task('deploy:dest', 'deploying on destination chain (deploying OFT to receive DogeForGoat)')
-    // .addParam('peereid', 'Peer eid')
-    // .addParam('deploy:dest', 'Peer OFT contract')
+    .addParam('name', 'Token name')
+    .addParam('symbol', 'Token symbol')
     .addOptionalParam('owner', 'contract owner')
     .setAction(async (arg, { ethers, network }) => {
         const [deployer] = await ethers.getSigners()
@@ -86,17 +86,8 @@ task('deploy:dest', 'deploying on destination chain (deploying OFT to receive Do
         }
 
         const GoatOFT = await ethers.getContractFactory('GoatOFT')
-        const goatOFT = await GoatOFT.deploy(endpoint, owner)
+        const goatOFT = await GoatOFT.deploy(arg.name, arg.symbol, endpoint, owner)
         await ethers.provider.waitForTransaction(goatOFT.deployTransaction.hash)
-
-        // const options = Options.newOptions().addExecutorLzReceiveOption(60000, 0).toHex().toString()
-        // const enforcedOptionParam = [
-        //     arg.peereid, // destination endpoint eid
-        //     1, // SEND message type
-        //     options,
-        // ]
-        // await goatOFT.setEnforcedOptions([enforcedOptionParam])
-        // await goatOFT.setPeer(arg.peereid, ethers.utils.zeroPad(arg.oftpeer, 32))
 
         console.log('----- Destination Chain -----')
         console.log('GoatOFT:', goatOFT.address)

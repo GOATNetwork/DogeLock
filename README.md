@@ -4,20 +4,29 @@ You can find the full audit report [here](https://hackmd.io/@offbeatsecurity/dog
 
 ## Deployed Contracts
 
-### BSC (source chain)
+> Dogecoin
 
-| Contract   | Mainnet Address (30102)                    | Testnet Address (40102)                    |
+| Contract   | BSC Mainnet Address (30102)                | BSC Testnet Address (40102)                |
 | ---------- | ------------------------------------------ | ------------------------------------------ |
 | Dogecoin   | 0xbA2aE424d960c26247Dd6c32edC70B295c744C43 | 0x9A359f736674913e405Eb64C2048c6293DC97CbF |
 | Lock Logic | 0x1d7e4Df7Ad00e3dbBF444515232E22e5C6D173e8 | 0x2d3B6b33E1cF574AB0d007A8154c8f97aa528795 |
 | Lock       | 0xaAC2155CceA674b0f5b0AAA81D5Ac85C510e9e98 | 0x4461ccD816E9952Ebd0BaF0661ac4E28de0d5095 |
 | Adapter    | 0x0E9A492Bd9D4241028f794b9580847e5C3444776 | 0xa1952fFa805b9F2b711b61f005C6e56054cCA016 |
 
-### Goat (destination chain)
-
-| Contract | Mainnet Address (30361)                    | Testnet Address (40356)                    |
+| Contract | Goat Mainnet Address (30361)               | Goat Testnet Address (40356)               |
 | -------- | ------------------------------------------ | ------------------------------------------ |
 | OFT      | 0x1E0d0303a8c4aD428953f5ACB1477dB42bb838cf | 0xa0449799bb779CE75FF37d8fd9A486603F24B804 |
+
+> BTCB
+
+| Contract | BSC Mainnet Address (30102)                | BSC Testnet Address (40102)                |
+| -------- | ------------------------------------------ | ------------------------------------------ |
+| BTCB     | 0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c | 0x6ce8dA28E2f864420840cF74474eFf5fD80E65B8 |
+| Adapter  | 0x                                         | 0xD9A5551652a1DF93E6242A39925CEb2133Ea2312 |
+
+| Contract | Goat Mainnet Address (30361) | Goat Testnet Address (40356)               |
+| -------- | ---------------------------- | ------------------------------------------ |
+| OFT      | 0x                           | 0xf612A339E85c2E5F4dD1645829ed5898d08F6649 |
 
 ## 1) Setup Project
 
