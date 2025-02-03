@@ -32,7 +32,7 @@ describe('Doge Adapter Test', function () {
     // Before hook for setup that runs once before all tests in the block
     before(async function () {
         // Contract factory for our tested contract
-        DogeForGoat = await ethers.getContractFactory('DogeAdapterUpgradeable')
+        DogeForGoat = await ethers.getContractFactory('AdapterUpgradeable')
 
         GoatOFT = await ethers.getContractFactory('GoatOFT')
 

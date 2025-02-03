@@ -170,7 +170,7 @@ task('deploy:adapter', 'deploying DogeAdapter.')
         }
 
         const UpgradeableProxy = await ethers.getContractFactory('UpgradeableProxy')
-        const DogeAdapter = await ethers.getContractFactory('DogeAdapterUpgradeable')
+        const DogeAdapter = await ethers.getContractFactory('AdapterUpgradeable')
 
         // deploy DogeAdapter
         const dogeAdapterLogic = await DogeAdapter.deploy(dogecoin.address, endpoint)
@@ -200,7 +200,7 @@ task('deploy:setup', 'Set Peer and other Layer Zero configurations')
         console.log('network', network.name, (await ethers.provider.getNetwork()).chainId)
         console.log('deployerAddr :', deployerAddr, ' Balance: ', await ethers.provider.getBalance(deployerAddr))
 
-        const DogeAdapter = await ethers.getContractFactory('DogeAdapterUpgradeable')
+        const DogeAdapter = await ethers.getContractFactory('AdapterUpgradeable')
         const adapter = await DogeAdapter.attach(arg.adapter)
 
         if (arg.setconfig && network.config.configOption != undefined) {
@@ -282,7 +282,7 @@ task('deploy:setup', 'Set Peer and other Layer Zero configurations')
         }
 
         if (arg.setenforced) {
-            const options = Options.newOptions().addExecutorLzReceiveOption(60000, 0).toHex().toString()
+            const options = Options.newOptions().addExecutorLzReceiveOption(100000, 0).toHex().toString()
             const enforcedOptionParam = [
                 arg.peereid, // destination endpoint eid
                 1, // SEND message type

@@ -22,11 +22,11 @@ You can find the full audit report [here](https://hackmd.io/@offbeatsecurity/dog
 | Contract | BSC Mainnet Address (30102)                | BSC Testnet Address (40102)                |
 | -------- | ------------------------------------------ | ------------------------------------------ |
 | BTCB     | 0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c | 0x6ce8dA28E2f864420840cF74474eFf5fD80E65B8 |
-| Adapter  | 0x                                         | 0xD9A5551652a1DF93E6242A39925CEb2133Ea2312 |
+| Adapter  | 0x5b7b01bEBCdf408Dd14429A9b12465AB45204B13 | 0xD9A5551652a1DF93E6242A39925CEb2133Ea2312 |
 
-| Contract | Goat Mainnet Address (30361) | Goat Testnet Address (40356)               |
-| -------- | ---------------------------- | ------------------------------------------ |
-| OFT      | 0x                           | 0xf612A339E85c2E5F4dD1645829ed5898d08F6649 |
+| Contract | Goat Mainnet Address (30361)               | Goat Testnet Address (40356)               |
+| -------- | ------------------------------------------ | ------------------------------------------ |
+| OFT      | 0xfe41e7e5cB3460c483AB2A38eb605Cda9e2d248E | 0xf612A339E85c2E5F4dD1645829ed5898d08F6649 |
 
 ## 1) Setup Project
 

@@ -7,7 +7,7 @@ import { SafeERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/utils/Saf
 /**
  * @dev Layer Zero adapter for ERC20 token.
  */
-contract DogeAdapterUpgradeable is OFTAdapterUpgradeable {
+contract AdapterUpgradeable is OFTAdapterUpgradeable {
     using SafeERC20 for IERC20;
 
     /**

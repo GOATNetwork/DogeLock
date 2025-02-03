@@ -1,6 +1,5 @@
 import { BigNumber } from 'ethers'
 import { task } from 'hardhat/config'
-import { Options } from '@layerzerolabs/lz-v2-utilities'
 
 const CONVERSION_MULTIPLIER = 10 ** 10
 
@@ -56,7 +55,7 @@ task('bridge:lock', 'bridge dogecoin through Lock')
         console.log('Token receiver: ', receiver)
         const eid = arg.eid
 
-        const OFT = await ethers.getContractFactory('DogeAdapterUpgradeable')
+        const OFT = await ethers.getContractFactory('AdapterUpgradeable')
         const oft = await OFT.attach(arg.oft)
         const Lock = await ethers.getContractFactory('DogeLockUpgradeable')
         const lock = await Lock.attach(arg.lock)
