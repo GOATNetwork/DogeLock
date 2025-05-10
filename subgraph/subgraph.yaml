@@ -6,11 +6,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DogeLock
-    network: localhost
+    network: bsc
     source:
-      address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+      address: "0xaAC2155CceA674b0f5b0AAA81D5Ac85C510e9e98"
       abi: DogeLock
-      startBlock: 4
+      startBlock: 44713199
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -19,8 +19,7 @@ dataSources:
         - User
         - LockEvent
         - UnlockEvent
-        - OFTSentEvent
-        - OFTReceivedEvent
+        - BridgeEvent
         - GlobalStat
       abis:
         - name: DogeLock
@@ -30,8 +29,6 @@ dataSources:
           handler: handleLock
         - event: Unlock(address,uint256,uint256)
           handler: handleUnlock
-        - event: OFTSent(indexed bytes32,uint32,indexed address,uint256,uint256)
-          handler: handleOFTSent
-        - event: OFTReceived(indexed bytes32,uint32,indexed address,uint256)
-          handler: handleOFTReceived
+        - event: Bridge(address,uint256,(uint32,bytes32,uint256,uint256,bytes,bytes,bytes))
+          handler: handleBridge
       file: ./src/mapping.ts

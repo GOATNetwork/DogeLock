@@ -1,8 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { BigNumber } from 'ethers'
-import { ethers } from 'hardhat'
+import hre, { ethers } from 'hardhat'
 
 async function main() {
     const [deployer] = await ethers.getSigners()
@@ -12,11 +11,14 @@ async function main() {
     const eidA = 1
     const eidB = 2
 
+    // Get contract factories
     const EndpointV2Mock = await ethers.getContractFactory('EndpointV2Mock')
     const dogecoinMock = await ethers.getContractFactory('DogecoinMock')
     const DogeLock = await ethers.getContractFactory('DogeLockUpgradeable')
     const DogeForGoatUpgradeable = await ethers.getContractFactory('DogeForGoatUpgradeable')
     const MyOFT = await ethers.getContractFactory('MyOFTMock')
+    const UpgradeableProxy = await ethers.getContractFactory('UpgradeableProxy')
+    const DogeForGoat = await ethers.getContractFactory('DogeForGoatUpgradeable')
 
     // source chain
     const dogecoin = await dogecoinMock.deploy()
@@ -56,10 +58,15 @@ async function main() {
         DogeLock: dogeLock.address,
         Token: dogecoin.address,
         EndpointV2: mockEndpointV2A.address,
-        blockNumber: (await ethers.provider.getBlock('latest')).number,
+        DogeForGoat: dfgOFT.address,
+        blockNumber: (await ethers.provider.getBlock(dogeLock.deployTransaction.blockNumber || 1)).number,
     }
 
-    const filePath = path.join(__dirname, '../subgraph/localnet.json')
+    const network = hre.network.name
+
+    const fileName = `${network}.json`
+    const filePath = path.join(__dirname, '../subgraph', fileName)
+
     fs.writeFileSync(filePath, JSON.stringify(deploymentInfo, null, 2))
 }
 
