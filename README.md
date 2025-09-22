@@ -4,6 +4,8 @@ You can find the full audit report [here](https://hackmd.io/@offbeatsecurity/dog
 
 ## Deployed Contracts
 
+### Bridge
+
 > Dogecoin
 
 | Contract   | BSC Mainnet Address (30102)                | BSC Testnet Address (40102)                |
@@ -27,6 +29,13 @@ You can find the full audit report [here](https://hackmd.io/@offbeatsecurity/dog
 | Contract | Goat Mainnet Address (30361)               | Goat Testnet Address (40356)               |
 | -------- | ------------------------------------------ | ------------------------------------------ |
 | OFT      | 0xfe41e7e5cB3460c483AB2A38eb605Cda9e2d248E | 0xf612A339E85c2E5F4dD1645829ed5898d08F6649 |
+
+### TokenClaimer
+
+| Contract | TokenClaimer                               |
+| -------- | ------------------------------------------ |
+| Proxy    | 0x6847D8C9DB2bC2a0086Cb4Ba067e7f1112ADb6E9 |
+| Logic    | 0xcF71b80C29Be907268986410369B4f9cba942255 |
 
 ## 1) Setup Project
 

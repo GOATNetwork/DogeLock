@@ -7,6 +7,7 @@ task('bridge:oft', 'bridge dogecoin through OFT')
     .addParam('oft', 'oft contract address')
     .addParam('eid', 'Eid of destination chain')
     .addParam('value', 'The amount to bridge')
+    .addParam('valuel', 'The amount to bridge')
     .addOptionalParam('execute', 'Execute the bridging transaction')
     .addOptionalParam('receiver', 'Token receiver on the destination chain')
     .setAction(async (arg, { ethers, network }) => {
@@ -26,7 +27,7 @@ task('bridge:oft', 'bridge dogecoin through OFT')
             eid,
             ethers.utils.zeroPad(receiver, 32),
             BigNumber.from(arg.value),
-            BigNumber.from(arg.value),
+            BigNumber.from(arg.valuel),
             '0x',
             '0x',
             '0x',

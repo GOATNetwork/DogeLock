@@ -15,12 +15,9 @@ contract TokenClaimerUpgradeable is OwnableUpgradeable {
 
     function setAmountBatch(address[] calldata _users, uint256[] calldata _amounts) external payable onlyOwner {
         require(_users.length == _amounts.length, "length mismatch");
-        uint256 totalAmount;
         for (uint256 i = 0; i < _users.length; i++) {
             _setAmount(_users[i], _amounts[i]);
-            totalAmount += _amounts[i];
         }
-        require(msg.value >= totalAmount, "incorrect value");
     }
 
     function _setAmount(address _user, uint256 _amount) internal {
